@@ -1,0 +1,2218 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reckoning</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Impianto: intestazione a gradiente fissa in alto con le schede a pillola, contenuto in pannelli arrotondati
+   su tutta la larghezza utile. Stessa lingua visiva di Solo Leveling (tema moderno): Poppins + Inter, viola e rosa. */
+:root{
+  --bg:#F3F0FA; --bg-glow:#FBE9F3;
+  --panel:#FFFFFF; --panel-2:#F7F3FE; --input:#FBFAFF;
+  --border:#E4DDF3; --border-2:#EFEAF8;
+  --ink:#2E2A45; --dim:#6E678F; --faint:#A7A2BF;
+  --gold:#7C4DEB; --brass:#9A70E0; --ember:#EC5C97; --moss:#22A06B;
+  --ok-bg:#E3F6EE; --ok-fg:#16794F; --ok-br:#B6E5CF;
+  --warn-bg:#FDF3DF; --warn-fg:#8A620A; --warn-br:#F1D9A3;
+  --bad-bg:#FDE6EC; --bad-fg:#B42A55; --bad-br:#F4B9CA;
+  --info-bg:#EEF1FD; --info-fg:#4453A6; --info-br:#CCD3F5;
+  --shadow:rgba(108,78,180,.13);
+  --grad:linear-gradient(120deg,#F38BA8 0%,#C38CF0 52%,#8E8CF5 100%);
+  --on-grad:#FFFFFF; --on-grad-pill:#7C4DEB;
+  --c-unfav:#E0457F; --c-fav:#3D8FD9; --c-bar:#9488C8; --c-line:#7C4DEB; --c-grid:#ECE7F7; --c-axis:#BDB4DA;
+  --radius:18px;
+  --f-display:"Poppins","Segoe UI",system-ui,sans-serif;
+  --f-body:"Inter","Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#16142A; --bg-glow:#2A2150;
+    --panel:#201D38; --panel-2:#2A2648; --input:#191732;
+    --border:#36315A; --border-2:#2C2849;
+    --ink:#ECEAF7; --dim:#A39FC0; --faint:#77729A;
+    --gold:#C4A5FF; --brass:#9C86D6; --ember:#FF7AB0; --moss:#34C38F;
+    --ok-bg:rgba(52,195,143,.14); --ok-fg:#7BE0B5; --ok-br:rgba(52,195,143,.35);
+    --warn-bg:rgba(245,185,74,.14); --warn-fg:#F5C76A; --warn-br:rgba(245,185,74,.35);
+    --bad-bg:rgba(242,85,122,.15); --bad-fg:#FF8FAA; --bad-br:rgba(242,85,122,.4);
+    --info-bg:rgba(124,140,245,.15); --info-fg:#AEB8FA; --info-br:rgba(124,140,245,.38);
+    --shadow:rgba(0,0,0,.35);
+    --c-bar:#7A70B4; --c-line:#C4A5FF; --c-grid:#2D2950; --c-axis:#4A4478;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#16142A; --bg-glow:#2A2150;
+  --panel:#201D38; --panel-2:#2A2648; --input:#191732;
+  --border:#36315A; --border-2:#2C2849;
+  --ink:#ECEAF7; --dim:#A39FC0; --faint:#77729A;
+  --gold:#C4A5FF; --brass:#9C86D6; --ember:#FF7AB0; --moss:#34C38F;
+  --ok-bg:rgba(52,195,143,.14); --ok-fg:#7BE0B5; --ok-br:rgba(52,195,143,.35);
+  --warn-bg:rgba(245,185,74,.14); --warn-fg:#F5C76A; --warn-br:rgba(245,185,74,.35);
+  --bad-bg:rgba(242,85,122,.15); --bad-fg:#FF8FAA; --bad-br:rgba(242,85,122,.4);
+  --info-bg:rgba(124,140,245,.15); --info-fg:#AEB8FA; --info-br:rgba(124,140,245,.38);
+  --shadow:rgba(0,0,0,.35);
+  --c-bar:#7A70B4; --c-line:#C4A5FF; --c-grid:#2D2950; --c-axis:#4A4478;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{margin:0}
+body{
+  background:radial-gradient(1100px 600px at 85% -10%, var(--bg-glow) 0%, transparent 65%), var(--bg);
+  color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.5;min-height:100vh;
+}
+h1,h2,h3{font-family:var(--f-display);font-weight:600;margin:0;text-wrap:balance}
+p{margin:0}
+
+/* ---------- intestazione ---------- */
+header.top{background:var(--grad);color:var(--on-grad);box-shadow:0 10px 30px rgba(140,90,200,.28);position:sticky;top:env(safe-area-inset-top,0px);z-index:50}
+.head-inner{max-width:min(2100px,96vw);margin:0 auto;padding:18px 22px 0;display:flex;gap:18px;align-items:flex-start;flex-wrap:wrap}
+.mark{width:68px;height:68px;flex:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.18))}
+.wordmark{font-family:var(--f-display);font-weight:700;font-size:28px;letter-spacing:.12em;line-height:1.1}
+.tagline{color:rgba(255,255,255,.9);font-size:14.5px;margin-top:4px;max-width:56ch}
+.head-right{margin-left:auto;display:flex;flex-direction:column;gap:8px;align-items:flex-end;font-size:13.5px;color:rgba(255,255,255,.9)}
+.chrome{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.head-right label{font-size:12.5px}
+header.top input{background:rgba(255,255,255,.95);border:none;color:#2E2A45;border-radius:999px;padding:6px 14px;width:220px;max-width:60vw}
+header.top .seg{background:rgba(255,255,255,.2);border:none}
+header.top .seg button{color:#fff}
+header.top .seg button[aria-pressed="true"]{background:#fff;color:var(--on-grad-pill)}
+header.top button.act.ghost{background:rgba(255,255,255,.2);border:none;color:#fff;box-shadow:none}
+.saved{min-height:18px;font-size:13px;color:#fff}
+nav.tabs{max-width:min(2100px,96vw);margin:14px auto 0;padding:0 22px 12px;display:flex;gap:6px;flex-wrap:wrap}
+nav.tabs button{font-family:var(--f-display);font-weight:500;font-size:14px;background:rgba(255,255,255,.18);color:#fff;border:none;border-radius:999px;padding:8px 18px;cursor:pointer;transition:background .15s;display:inline-flex;align-items:center;gap:8px}
+nav.tabs button:hover{background:rgba(255,255,255,.32)}
+nav.tabs button[aria-current="true"]{background:#fff;color:var(--on-grad-pill);box-shadow:0 6px 16px rgba(80,40,140,.25)}
+nav.tabs .badge{font-family:var(--f-body);font-size:11.5px;font-weight:700;min-width:20px;height:20px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;padding:0 6px;background:#fff;color:#B42A55}
+nav.tabs button[aria-current="true"] .badge{background:#B42A55;color:#fff}
+nav.tabs .badge.soft{color:#8A620A}
+nav.tabs button[aria-current="true"] .badge.soft{background:#8A620A;color:#fff}
+header.top.compact .head-inner{padding-top:8px;align-items:center}
+header.top.compact .mark{width:32px;height:32px}
+header.top.compact .wordmark{font-size:17px}
+header.top.compact .tagline,header.top.compact .head-right label,header.top.compact .saved{display:none}
+header.top.compact .head-right{flex-direction:row;align-items:center}
+header.top.compact nav.tabs{margin-top:8px;padding-bottom:8px}
+header.top.compact nav.tabs button{font-size:12.5px;padding:5px 13px}
+
+main{max-width:min(2100px,96vw);margin:0 auto;padding-block:24px 40px;padding-inline:22px}
+@media (max-width:640px){
+  .head-inner,nav.tabs{padding-inline:16px} main{padding-inline:16px}
+  .head-right{margin-left:0;align-items:flex-start;width:100%}
+  .chrome{justify-content:flex-start}
+  .wordmark{font-size:22px} .mark{width:48px;height:48px}
+  header.top{position:static}
+}
+
+/* ---------- pannelli ---------- */
+.panel{background:var(--panel);border:1px solid var(--border-2);border-radius:var(--radius);padding:20px 24px 24px;margin-bottom:22px;box-shadow:0 1px 2px var(--shadow),0 12px 32px var(--shadow);min-width:0}
+.panel > h2{font-size:18px;color:var(--ink);margin-bottom:6px}
+.panel > h2::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--grad);margin-right:10px;vertical-align:3px}
+.hint{color:var(--dim);font-size:14px;margin:0 0 14px;max-width:92ch}
+.hint + .hint{margin-top:-6px}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:22px}
+.cols > .panel{margin-bottom:0}
+.cols{margin-bottom:22px}
+
+button{font-family:inherit}
+button.act{font-family:var(--f-body);font-size:14px;font-weight:600;background:var(--grad);color:#fff;border:none;border-radius:999px;padding:8px 18px;cursor:pointer;box-shadow:0 6px 16px rgba(170,100,220,.3);transition:transform .15s,box-shadow .15s}
+button.act:hover{transform:translateY(-1px);box-shadow:0 10px 22px rgba(170,100,220,.38)}
+button.act.ghost{background:var(--panel);color:var(--gold);border:1px solid var(--border);box-shadow:0 2px 8px var(--shadow)}
+button.act.small{padding:4px 12px;font-size:13px}
+button.danger{border:1px solid var(--bad-br);background:transparent;color:var(--bad-fg);padding:4px 12px;font-size:13px;border-radius:999px;cursor:pointer}
+button.danger:hover{background:var(--bad-bg)}
+button.link{background:none;border:none;color:var(--gold);cursor:pointer;font-size:13.5px;font-weight:600;padding:2px 4px;border-radius:6px}
+button.link:hover{text-decoration:underline}
+.row-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;align-items:center}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+input,select,textarea{background:var(--input);color:var(--ink);border:1px solid var(--border);border-radius:10px;padding:7px 10px;font-family:inherit;font-size:14.5px;max-width:100%}
+input:focus,select:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(124,77,235,.15)}
+input.num{width:104px;text-align:right;font-variant-numeric:tabular-nums}
+input.num.short{width:76px}
+input.wide{width:260px}
+input.bad{border-color:var(--bad-fg);box-shadow:0 0 0 3px var(--bad-bg)}
+textarea{width:100%;min-height:76px;resize:vertical;line-height:1.45}
+input[type=checkbox]{accent-color:var(--gold);width:16px;height:16px;vertical-align:-3px}
+
+.fields{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px 18px}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field > label,.field > .lab{font-size:13px;color:var(--dim);font-weight:500}
+.field input,.field select{width:100%}
+.field input[type=checkbox]{width:16px;flex:none}
+.field.span2{grid-column:span 2}
+.field.full{grid-column:1 / -1}
+.field .sub{font-size:12.5px;color:var(--dim)}
+@media (max-width:520px){.field.span2{grid-column:auto}}
+.fields.gen{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:18px 28px}
+.fields.gen .field{gap:10px}
+label.chk{display:flex;gap:8px;align-items:center;font-size:14.5px!important;color:var(--ink)!important;font-weight:600!important;cursor:pointer}
+.inl{display:flex;gap:10px;align-items:center;justify-content:space-between;max-width:300px;font-size:13.5px;color:var(--dim)}
+.inl input{width:76px!important}
+
+/* ---------- tabelle ---------- */
+.scroller{overflow-x:auto;margin:0 -4px;padding:0 4px}
+table{border-collapse:collapse;width:100%;font-size:14.5px}
+th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border-2);vertical-align:middle}
+thead th{font-size:12px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border);white-space:nowrap}
+tbody tr:hover{background:var(--panel-2)}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+tfoot td{border-top:1px solid var(--border);border-bottom:none;font-weight:700}
+tr.strong td{font-weight:700}
+tr.sep td{border-top:1px solid var(--border)}
+td.neg{color:var(--bad-fg)}
+.empty{color:var(--dim);font-style:italic;padding:14px 2px}
+.matrix th:first-child,.matrix td:first-child{position:sticky;left:0;background:var(--panel);z-index:2}
+.matrix tbody tr:hover td:first-child{background:var(--panel-2)}
+.matrix td.yr{padding:6px 4px;text-align:right}
+.matrix td.yr input{width:80px;padding:7px 7px;font-size:14px}
+.matrix thead th.wrap{white-space:normal;line-height:1.25;max-width:84px}
+.matrix td input.nome{width:250px}
+.rowtools{display:flex;gap:4px 10px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.rowtools .tag{font-size:11.5px;padding:1px 8px}
+button.link.del{color:var(--bad-fg)}
+.matrix td.yr .calc{display:block;font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;padding:2px 6px 0 0;white-space:nowrap}
+.matrix th.yr{text-align:right;padding-right:14px}
+.matrix tr.det > td{position:static;background:var(--panel-2);padding:16px 18px;border-bottom:1px solid var(--border)}
+.matrix tr.det:hover{background:none}
+.matrix tr.open > td{border-bottom-color:transparent}
+td.tools{white-space:nowrap;text-align:right}
+.detbox{position:sticky;left:18px;width:min(1180px,calc(100vw - 130px));display:flex;flex-direction:column;gap:16px}
+.detbox h3{font-size:13px;text-transform:uppercase;letter-spacing:.05em;color:var(--dim);font-family:var(--f-body);font-weight:700;margin-bottom:8px}
+.formula{background:var(--panel);border:1px dashed var(--border);border-radius:12px;padding:10px 14px;font-size:14px;color:var(--dim);font-variant-numeric:tabular-nums}
+.formula b{color:var(--ink)}
+
+.tag{font-size:12.5px;font-weight:600;padding:2px 10px;border-radius:999px;border:1px solid;white-space:nowrap;display:inline-block}
+.t-ok{color:var(--ok-fg);border-color:var(--ok-br);background:var(--ok-bg)}
+.t-warn{color:var(--warn-fg);border-color:var(--warn-br);background:var(--warn-bg)}
+.t-bad{color:var(--bad-fg);border-color:var(--bad-br);background:var(--bad-bg)}
+.t-info{color:var(--info-fg);border-color:var(--info-br);background:var(--info-bg)}
+.t-idle{color:var(--dim);border-color:var(--border)}
+
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:999px;overflow:hidden;background:var(--panel)}
+.seg button{background:transparent;color:var(--dim);border:none;padding:6px 14px;font-size:13.5px;cursor:pointer;border-radius:999px}
+.seg button[aria-pressed="true"]{background:var(--grad);color:#fff;font-weight:700}
+
+/* ---------- responso ---------- */
+.verdict{border-radius:var(--radius);padding:18px 22px;margin-bottom:22px;box-shadow:0 12px 32px var(--shadow);border-left:6px solid;background:var(--panel)}
+.verdict .k{font-family:var(--f-display);font-size:12.5px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:4px}
+.verdict .v{font-family:var(--f-display);font-weight:600;font-size:24px;line-height:1.2;color:var(--ink);text-wrap:balance}
+.verdict p{margin-top:8px;color:var(--dim);max-width:120ch}
+.verdict.ok{border-color:var(--moss)} .verdict.ok .k{color:var(--ok-fg)}
+.verdict.warn{border-color:#E2A325} .verdict.warn .k{color:var(--warn-fg)}
+.verdict.bad{border-color:var(--bad-fg)} .verdict.bad .k{color:var(--bad-fg)}
+.kpis{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:22px}
+.kpi{flex:1 1 170px;background:var(--panel);border:1px solid var(--border-2);border-radius:var(--radius);padding:16px 18px;box-shadow:0 8px 24px var(--shadow);position:relative;overflow:hidden;min-width:0}
+.kpi::before{content:"";position:absolute;inset:0 0 auto 0;height:4px;background:var(--grad)}
+.kpi .n{font-family:var(--f-display);font-weight:700;font-size:24px;line-height:1.15;color:var(--gold);font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.kpi .n small{font-size:13px;font-weight:600;color:var(--dim)}
+.kpi .l{font-size:13.5px;color:var(--dim);margin-top:3px}
+.kpi .s{font-size:12.5px;margin-top:6px}
+.banner{background:var(--info-bg);border:1px solid var(--info-br);color:var(--info-fg);border-radius:14px;padding:10px 16px;margin-bottom:22px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14px}
+.banner .sp{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
+
+/* ---------- grafici ---------- */
+.chart{background:var(--input);border:1px solid var(--border-2);border-radius:14px;padding:10px;overflow-x:auto}
+.chart svg{display:block;width:100%;min-width:560px;height:auto}
+.chart text{font-family:var(--f-body)}
+.chart text.halo{paint-order:stroke;stroke:var(--input);stroke-width:4px;stroke-linejoin:round}
+.chart:empty{min-height:120px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--dim);margin:0 0 10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.swatch{width:12px;height:12px;border-radius:3px;display:inline-block}
+.swatch.line{height:3px;width:16px;border-radius:2px}
+.hit{cursor:default;outline-offset:1px}
+path.hit:hover,path.hit:focus{opacity:.8}
+rect.hit{fill:var(--gold);fill-opacity:0}
+rect.hit:hover,rect.hit:focus{fill-opacity:.07}
+#tip{position:fixed;z-index:200;pointer-events:none;background:var(--ink);color:var(--panel);border-radius:10px;padding:8px 12px;font-size:13px;line-height:1.45;white-space:pre-line;max-width:320px;box-shadow:0 8px 24px var(--shadow)}
+
+/* ---------- controlli ---------- */
+.checks{display:flex;flex-direction:column;gap:10px}
+.check{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--border-2);border-radius:14px;padding:12px 16px;background:var(--panel-2)}
+.check .tag{flex:none;margin-top:1px}
+.check .t{font-weight:600}
+.check .d{color:var(--dim);font-size:14px;margin-top:2px;max-width:90ch}
+
+/* ---------- finestra di conferma ---------- */
+#modal{position:fixed;inset:0;z-index:300;background:rgba(22,20,42,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+#modal .box{background:var(--panel);color:var(--ink);border-radius:var(--radius);padding:22px 24px;max-width:460px;width:100%;box-shadow:0 24px 60px rgba(0,0,0,.35)}
+#modal h3{font-size:18px;margin-bottom:8px}
+#modal p{color:var(--dim)}
+#modal ul{margin:10px 0 0;padding-left:20px;color:var(--dim)}
+#modal li{margin:6px 0}
+#modal li b{color:var(--ink)}
+#modal .box{max-width:520px;outline:none}
+
+/* ---------- guida ---------- */
+.guida{max-width:92ch}
+.guida h3{font-size:16px;margin:20px 0 6px;color:var(--gold)}
+.guida ul{margin:0 0 8px;padding-left:22px}
+.guida li{margin:4px 0}
+.guida dt{font-weight:600;margin-top:10px}
+.guida dd{margin:2px 0 0;color:var(--dim)}
+.nota{background:var(--panel-2);border-left:4px solid var(--brass);border-radius:10px;padding:10px 14px;font-size:14px;margin-top:12px}
+
+footer.foot{border-top:1px solid var(--border-2);background:var(--panel);margin-top:20px}
+.foot-inner{max-width:min(2100px,96vw);margin:0 auto;padding:18px 22px;display:flex;gap:16px;justify-content:space-between;flex-wrap:wrap;align-items:center}
+.ver{font-family:var(--f-display);font-size:13px;letter-spacing:.14em;color:var(--brass)}
+.by{font-family:var(--f-display);font-size:13px;letter-spacing:.28em;color:var(--gold)}
+
+/* ---------- report: foglio sobrio, sempre chiaro, pensato per la stampa ---------- */
+.sheet{
+  --panel:#FFFFFF; --panel-2:#F6F4FA; --input:#FFFFFF; --border:#D9D5E3; --border-2:#E8E5EF;
+  --ink:#1F1C2E; --dim:#5B5670; --faint:#9A96AC; --gold:#5B3FC4; --brass:#7A68B8;
+  --ok-bg:#E3F6EE; --ok-fg:#16794F; --ok-br:#B6E5CF; --warn-bg:#FDF3DF; --warn-fg:#8A620A; --warn-br:#F1D9A3;
+  --bad-bg:#FDE6EC; --bad-fg:#B42A55; --bad-br:#F4B9CA; --info-bg:#EEF1FD; --info-fg:#4453A6; --info-br:#CCD3F5;
+  --c-unfav:#E0457F; --c-fav:#3D8FD9; --c-bar:#9488C8; --c-line:#5B3FC4; --c-grid:#ECE9F3; --c-axis:#B9B4C8; --moss:#22A06B;
+  background:#FFFFFF;color:var(--ink);max-width:1000px;margin:0 auto;padding:40px 44px;border:1px solid var(--border-2);border-radius:6px;box-shadow:0 12px 32px var(--shadow);font-size:13.5px;color-scheme:light;
+}
+.sheet{overflow-x:auto}
+.sheet h1{font-size:24px;font-weight:700}
+.sheet .meta{color:var(--dim);margin-top:4px;font-size:13px}
+.sheet h2{font-size:15px;font-weight:700;margin:26px 0 8px;padding-bottom:5px;border-bottom:2px solid var(--ink)}
+.sheet p{margin:6px 0;max-width:none}
+.sheet table{font-size:12.5px}
+.sheet th,.sheet td{padding:5px 8px}
+.sheet thead th{color:var(--dim);font-size:11px}
+.sheet tbody tr:hover{background:none}
+.sheet .rv{border:1px solid var(--border);border-left:6px solid var(--ink);border-radius:4px;padding:12px 16px;margin-top:16px}
+.sheet .rv.ok{border-left-color:#22A06B} .sheet .rv.warn{border-left-color:#E2A325} .sheet .rv.bad{border-left-color:#B42A55}
+.sheet .rv b{font-family:var(--f-display);font-size:16px}
+.sheet .rk{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-top:14px}
+.sheet .rk div{border:1px solid var(--border);border-radius:4px;padding:8px 12px}
+.sheet .rk b{display:block;font-family:var(--f-display);font-size:17px;font-variant-numeric:tabular-nums}
+.sheet .rk span{color:var(--dim);font-size:12px}
+.sheet .chart{border:none;padding:0;background:none;margin-top:6px;--input:#FFFFFF;overflow:visible}
+.sheet .scroller{overflow:visible;margin:0;padding:0}
+.sheet .matrix th:first-child,.sheet .matrix td:first-child{position:static;background:none}
+.sheet .matrix{font-size:10.5px}
+.sheet .matrix th,.sheet .matrix td{padding:4px 5px}
+.sheet .matrix thead th{font-size:10px}
+.sheet .chart svg{min-width:0}
+.sheet .two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.sheet .blk{break-inside:avoid}
+.sheet ul{margin:6px 0;padding-left:20px}
+.sheet .small{font-size:11.5px;color:var(--dim)}
+@media (max-width:760px){.sheet{padding:22px 18px}.sheet .two{grid-template-columns:1fr}}
+
+@media print{
+  @page{size:A4;margin:14mm}
+  body{background:#fff}
+  header.top,footer.foot,.noprint,#tip,#modal{display:none!important}
+  main{padding:0;max-width:none}
+  .sheet{border:none;box-shadow:none;padding:0;max-width:none;border-radius:0;overflow:visible}
+  .sheet .two{grid-template-columns:1fr 1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<header class="top" id="top">
+  <div class="head-inner">
+    <svg class="mark" viewBox="0 0 100 100" aria-hidden="true">
+      <circle cx="50" cy="50" r="43" fill="rgba(255,255,255,.14)" stroke="#fff" stroke-width="2"/>
+      <circle cx="50" cy="50" r="37" fill="none" stroke="#fff" stroke-width="1" stroke-opacity=".55"/>
+      <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" fill="none">
+        <path d="M50 7v6M93 50h-6M50 93v-6M7 50h6"/>
+        <path d="M80.4 19.6l-4.2 4.2M80.4 80.4l-4.2-4.2M19.6 80.4l4.2-4.2M19.6 19.6l4.2 4.2" stroke-opacity=".6"/>
+      </g>
+      <g stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none">
+        <path d="M50 27v41M40 70h20"/>
+        <path d="M27 40l46-9"/>
+        <path d="M27 40l-7 15h14zM73 31l-7 21h14z" fill="rgba(255,255,255,.28)"/>
+      </g>
+      <circle cx="50" cy="27" r="3.4" fill="#fff"/>
+    </svg>
+    <div>
+      <div class="wordmark">RECKONING</div>
+      <p class="tagline" id="tagline"></p>
+    </div>
+    <div class="head-right">
+      <div class="chrome">
+        <div class="seg" id="langSeg">
+          <button data-a="lang" data-arg="it" aria-pressed="true">IT</button>
+          <button data-a="lang" data-arg="en" aria-pressed="false">EN</button>
+        </div>
+        <button class="act ghost" id="themeBtn" data-a="tema"></button>
+      </div>
+      <div class="chrome">
+        <label for="projNome" id="lblNome"></label>
+        <input id="projNome" data-p="proj.nome" data-t="s" autocomplete="off">
+      </div>
+      <div class="saved" id="savedFlag" role="status"></div>
+    </div>
+  </div>
+  <nav class="tabs" id="nav" aria-label="Schede"></nav>
+</header>
+<main id="main"></main>
+<footer class="foot">
+  <div class="foot-inner">
+    <span class="ver">RECKONING <span id="verNum"></span></span>
+    <span class="by">MADE BY LUCA CENCI</span>
+  </div>
+</footer>
+<div id="tip" hidden></div>
+<div id="modal" hidden></div>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+<script>
+/* ============================================================
+   MOTORE DI CALCOLO
+   Stesse regole del template CBA aziendale:
+   - orizzonte di 10 anni come il template (modificabile da 3 a 20); il primo anno non è scontato (esponente 0)
+   - VAN = somma dei flussi netti attualizzati
+   - payback = periodo in cui il cumulato passa da negativo a non negativo,
+     meno 1, più la quota dell'anno necessaria a chiudere il residuo
+   ============================================================ */
+let NY = 10;                      /* anni dell'orizzonte in uso */
+const NY_MIN = 3, NY_MAX = 20;
+function orizzonte(x) { const n = Math.round(parseFloat(x)); return isFinite(n) ? Math.max(NY_MIN, Math.min(NY_MAX, n)) : 10; }
+function setNY(n) { NY = orizzonte(n); }
+/* esegue fn con un altro orizzonte (serve per valutare un'istantanea salvata con anni diversi) */
+function conOrizzonte(n, fn) { const prima = NY; NY = orizzonte(n); try { return fn(); } finally { NY = prima; } }
+const CAT_CAPEX = ["Fabbricati", "Macchinari e attrezzature", "Contingency", "Altro"];
+const CAT_OPEX = ["Gestione, installazione e ripristino", "Costo del personale", "Costi di trasloco", "Sottoassorbimento", "Altro"];
+/* ampiezza del range suggerito in base alla certezza del dato: [sfavorevole, favorevole] in % */
+const CERTEZZE = { preventivo: [5, 0], misurato: [10, 5], stima: [20, 10], ipotesi: [30, 10] };
+
+function nz(v) { const n = parseFloat(v); return isFinite(n) ? n : 0; }
+function zeri() { return new Array(NY).fill(0); }
+function somma(a) { let s = 0; for (let i = 0; i < a.length; i++) s += a[i]; return s; }
+function uid() { return Math.random().toString(36).slice(2, 9); }
+
+function nuovaVoce(tipo) {
+  return {
+    id: uid(), tipo: tipo, nome: "",
+    cat: tipo === "capex" ? CAT_CAPEX[1] : tipo === "opex" ? CAT_OPEX[4] : "",
+    modo: "man", val: zeri(), qta: zeri(), unitVal: 0, unita: "",
+    ins: { spesa: 0, quota: 100, materiali: 0, ore: 0, tariffa: 0, altro: 0, rampa: zeri() },
+    fonte: "", certezza: "stima", sfav: 0, fav: 0, gruppo: "", note: ""
+  };
+}
+function nuovoProgetto(anno) {
+  return {
+    meta: {},
+    esempio: false,
+    proj: {
+      nome: "", pm: "", sito: "", owner: "", dataInizio: "", dataFine: "",
+      valuta: "EUR", scala: 1, anno0: anno || new Date().getFullYear(), anni: 10, tasso: 9, pbMax: 5, criterio: "disc",
+      background: "", benefici: "", nonMisurabili: "", rischi: "", ipotesi: ""
+    },
+    voci: [],
+    sens: { ritardo: { on: true, anni: 1 }, tasso: { on: true, min: 7, max: 11 }, scenari: [] },
+    snap: []
+  };
+}
+/* completa i campi mancanti di un file salvato da una versione precedente */
+function migrate(o) {
+  const b = nuovoProgetto();
+  if (!o || typeof o !== "object" || !o.proj || !Array.isArray(o.voci)) throw new Error("formato");
+  o.meta = o.meta || {};
+  o.proj = Object.assign({}, b.proj, o.proj);
+  o.sens = o.sens || {};
+  o.sens.ritardo = Object.assign({}, b.sens.ritardo, o.sens.ritardo);
+  o.sens.tasso = Object.assign({}, b.sens.tasso, o.sens.tasso);
+  o.sens.scenari = Array.isArray(o.sens.scenari) ? o.sens.scenari : [];
+  o.snap = Array.isArray(o.snap) ? o.snap : [];
+  o.esempio = !!o.esempio;
+  o.proj.anni = orizzonte(o.proj.anni);
+  if ([1, 1000, 1000000].indexOf(+o.proj.scala) < 0) o.proj.scala = 1; else o.proj.scala = +o.proj.scala;
+  const serie = a => { const n = Math.max(o.proj.anni, Array.isArray(a) ? a.length : 0), z = new Array(n).fill(0); if (Array.isArray(a)) for (let i = 0; i < a.length; i++) z[i] = nz(a[i]); return z; };
+  o.voci = o.voci.map(v => {
+    const n = Object.assign(nuovaVoce(v.tipo), v);
+    if (["ben", "capex", "opex"].indexOf(n.tipo) < 0) n.tipo = "ben";
+    if (["man", "driver", "ins"].indexOf(n.modo) < 0) n.modo = "man";
+    if (n.modo === "ins" && n.tipo !== "ben") n.modo = "man";
+    n.val = serie(n.val); n.qta = serie(n.qta);
+    n.ins = Object.assign(nuovaVoce("ben").ins, v.ins || {}); n.ins.rampa = serie(n.ins.rampa);
+    return n;
+  });
+  return o;
+}
+
+/* importi annui di una voce, sempre come grandezze positive */
+function insNetto(v) {
+  const I = v.ins;
+  const evitata = nz(I.spesa) * nz(I.quota) / 100;
+  const interno = nz(I.materiali) + nz(I.ore) * nz(I.tariffa) + nz(I.altro);
+  return { evitata: evitata, interno: interno, netto: evitata - interno };
+}
+function importi(v) {
+  const out = zeri();
+  if (v.modo === "driver") { const u = nz(v.unitVal); for (let i = 0; i < NY; i++) out[i] = nz(v.qta[i]) * u; }
+  else if (v.modo === "ins") { const n = insNetto(v).netto; for (let i = 0; i < NY; i++) out[i] = n * nz(v.ins.rampa[i]) / 100; }
+  else for (let i = 0; i < NY; i++) out[i] = nz(v.val[i]);
+  return out;
+}
+/* allinea l'orizzonte al progetto e allunga le serie delle voci se servono più anni.
+   Gli importi oltre l'orizzonte restano salvati ma non entrano nel calcolo. */
+function adatta(S) {
+  NY = orizzonte(S.proj.anni); S.proj.anni = NY;
+  S.voci.forEach(v => { [v.val, v.qta, v.ins.rampa].forEach(a => { while (a.length < NY) a.push(0); }); });
+}
+function oltreOrizzonte(S, n) {
+  return S.voci.some(v => [v.val, v.qta, v.ins.rampa].some(a => a.slice(n).some(x => nz(x) !== 0)));
+}
+/* moltiplica per k tutti gli importi in denaro (cambio di unità o di valuta), istantanee comprese */
+function converti(S, k) {
+  const r = x => Math.round(nz(x) * k * 1e9) / 1e9;
+  const voci = lista => lista.forEach(v => {
+    v.val = v.val.map(r); v.unitVal = r(v.unitVal);
+    v.ins.spesa = r(v.ins.spesa); v.ins.materiali = r(v.ins.materiali); v.ins.tariffa = r(v.ins.tariffa); v.ins.altro = r(v.ins.altro);
+  });
+  voci(S.voci);
+  (S.snap || []).forEach(sn => { if (sn.dati && Array.isArray(sn.dati.voci)) voci(sn.dati.voci); });
+}
+function haImporti(S) { return S.voci.some(v => v.val.some(x => nz(x)) || nz(v.unitVal) || nz(v.ins.spesa) || nz(v.ins.materiali) || nz(v.ins.tariffa) || nz(v.ins.altro)); }
+/* slittamento di d anni (anche frazionario: quota f slitta di un anno in più) */
+function slitta(a, d) {
+  if (!d) return a.slice();
+  const n = Math.floor(d), f = d - n, out = zeri();
+  for (let i = 0; i < NY; i++) {
+    const x = i - n >= 0 ? a[i - n] : 0, y = i - n - 1 >= 0 ? a[i - n - 1] : 0;
+    out[i] = (1 - f) * x + f * y;
+  }
+  return out;
+}
+function payback(flussi, cumulati) {
+  let pb = null;
+  for (let i = 1; i < NY; i++) {
+    if (cumulati[i - 1] < 0 && cumulati[i] >= 0 && flussi[i] !== 0) {
+      const p = i + Math.abs(cumulati[i - 1] / flussi[i]);
+      if (pb === null || p > pb) pb = p;
+    }
+  }
+  return pb;
+}
+function vanDi(net, r) { let s = 0; for (let i = 0; i < net.length; i++) s += net[i] / Math.pow(1 + r, i); return s; }
+function tir(net) {
+  let lo, hi;
+  const f0 = vanDi(net, 0);
+  if (f0 > 0) { lo = 0; hi = 10; if (vanDi(net, hi) > 0) return null; }
+  else if (f0 < 0) { lo = -0.95; hi = 0; if (vanDi(net, lo) < 0) return null; }
+  else return 0;
+  for (let k = 0; k < 80; k++) {
+    const m = (lo + hi) / 2;
+    if ((vanDi(net, m) > 0) === (vanDi(net, lo) > 0)) lo = m; else hi = m;
+  }
+  return (lo + hi) / 2;
+}
+function indicatori(net, r) {
+  const disc = net.map((x, i) => x / Math.pow(1 + r, i));
+  const acc = [], accDisc = [];
+  let a = 0, b = 0;
+  for (let i = 0; i < NY; i++) { a += net[i]; b += disc[i]; acc.push(a); accDisc.push(b); }
+  return { disc: disc, acc: acc, accDisc: accDisc, van: b, pbDisc: payback(disc, accDisc), pbSimple: payback(net, acc), tir: tir(net) };
+}
+
+/* valuta il modello; ov = { mult:{idVoce:k}, ritardo:anni, tasso:% , benK:k } */
+function valuta(S, ov) {
+  ov = ov || {};
+  const mult = ov.mult || {};
+  const r = (ov.tasso != null ? ov.tasso : nz(S.proj.tasso)) / 100;
+  const ben = zeri(), capex = zeri(), opex = zeri(), voci = {};
+  S.voci.forEach(v => {
+    let a = importi(v);
+    const k = mult[v.id] != null ? mult[v.id] : 1;
+    if (k !== 1) a = a.map(x => x * k);
+    if (v.tipo === "ben") {
+      if (ov.benK != null) a = a.map(x => x * ov.benK);
+      if (ov.ritardo) a = slitta(a, ov.ritardo);
+    }
+    voci[v.id] = a;
+    const dest = v.tipo === "ben" ? ben : v.tipo === "capex" ? capex : opex;
+    for (let i = 0; i < NY; i++) dest[i] += a[i];
+  });
+  const out = zeri(), net = zeri();
+  for (let i = 0; i < NY; i++) { out[i] = capex[i] + opex[i]; net[i] = ben[i] - out[i]; }
+  const k = indicatori(net, r);
+  k.ben = ben; k.capex = capex; k.opex = opex; k.out = out; k.net = net; k.voci = voci; k.r = r;
+  k.pb = S.proj.criterio === "simple" ? k.pbSimple : k.pbDisc;
+  return k;
+}
+function va(a, r) { return vanDi(a, r); }
+
+/* ---------- criteri di approvazione ---------- */
+function rispetta(S, k) {
+  const pbMax = nz(S.proj.pbMax);
+  const vanOk = k.van > 0;
+  const pbOk = pbMax > 0 ? (k.pb !== null && k.pb <= pbMax + 1e-9) : true;
+  return { vanOk: vanOk, pbOk: pbOk, ok: vanOk && pbOk };
+}
+
+/* ---------- variabili di sensitivity ---------- */
+function variabili(S) {
+  const out = [], gruppi = {};
+  S.voci.forEach(v => {
+    if (!nz(v.sfav) && !nz(v.fav)) return;
+    const parte = { id: v.id, sfav: nz(v.sfav), fav: nz(v.fav) };
+    const g = (v.gruppo || "").trim();
+    if (g) {
+      if (!gruppi[g]) { gruppi[g] = { id: "g:" + g, tipo: "voci", nome: g, parti: [], gruppo: true }; out.push(gruppi[g]); }
+      gruppi[g].parti.push(parte);
+    } else out.push({ id: "v:" + v.id, tipo: "voci", nome: v.nome, parti: [parte], gruppo: false });
+  });
+  if (S.sens.ritardo.on && nz(S.sens.ritardo.anni) > 0) out.push({ id: "rit", tipo: "ritardo", anni: nz(S.sens.ritardo.anni) });
+  if (S.sens.tasso.on) out.push({ id: "tas", tipo: "tasso", min: nz(S.sens.tasso.min), max: nz(S.sens.tasso.max) });
+  return out;
+}
+/* livello: "u" sfavorevole, "f" favorevole, oppure un numero x lungo la direzione sfavorevole */
+function applica(S, vr, livello, ov) {
+  ov = ov || {}; ov.mult = ov.mult || {};
+  if (livello === "b" || livello == null) return ov;
+  if (vr.tipo === "voci") {
+    vr.parti.forEach(p => {
+      const pct = livello === "u" ? p.sfav : livello === "f" ? p.fav : livello * p.sfav;
+      ov.mult[p.id] = Math.max(0, 1 + pct / 100);
+    });
+  } else if (vr.tipo === "ritardo") {
+    ov.ritardo = livello === "u" ? vr.anni : livello === "f" ? 0 : livello;
+  } else if (vr.tipo === "tasso") {
+    ov.tasso = livello === "u" ? vr.max : livello === "f" ? vr.min : livello;
+  }
+  return ov;
+}
+function totaleVar(S, vr, k) { let s = 0; vr.parti.forEach(p => { s += somma(k.voci[p.id] || []); }); return s; }
+
+/* cerca il punto in cui g passa da > 0 (regge) a <= 0 (non regge) fra lo e hi */
+function soglia(g, lo, hi) {
+  if (!(g(lo) > 0)) return { stato: "base" };
+  if (g(hi) > 0) return { stato: "mai" };
+  for (let k = 0; k < 70; k++) { const m = (lo + hi) / 2; if (g(m) > 0) lo = m; else hi = m; }
+  return { stato: "ok", x: (lo + hi) / 2 };
+}
+function soglieVar(S, vr, base) {
+  const pbMax = nz(S.proj.pbMax);
+  const gVan = k => k.van;
+  const gPb = k => (k.pb === null ? -1 : pbMax - k.pb);
+  let lo = 0, hi, ev;
+  if (vr.tipo === "voci") {
+    let neg = 0, pos = 0;
+    vr.parti.forEach(p => { if (p.sfav < 0) neg = Math.max(neg, -p.sfav); if (p.sfav > 0) pos = Math.max(pos, p.sfav); });
+    if (!neg && !pos) return null;
+    hi = neg ? 100 / neg : 5000 / pos;
+    ev = x => valuta(S, applica(S, vr, x));
+  } else if (vr.tipo === "ritardo") { hi = NY; ev = x => valuta(S, { ritardo: x }); }
+  else if (vr.tipo === "tasso") { lo = nz(S.proj.tasso); hi = 300; ev = x => valuta(S, { tasso: x }); }
+  else if (vr.tipo === "benefici") { hi = 1; ev = x => valuta(S, { benK: 1 - x }); }
+  const descrivi = s => {
+    if (s.stato !== "ok") { if (s.stato === "mai") s.limite = ev(hi); return s; }
+    s.k = ev(s.x);
+    if (vr.tipo === "voci") {
+      const t0 = totaleVar(S, vr, base), t1 = totaleVar(S, vr, s.k);
+      s.totale = t1; s.delta = t0 ? (t1 - t0) / Math.abs(t0) * 100 : 0;
+    }
+    return s;
+  };
+  const out = { van: descrivi(soglia(x => gVan(ev(x)), lo, hi)) };
+  out.pb = pbMax > 0 ? descrivi(soglia(x => gPb(ev(x)), lo, hi)) : null;
+  out.hi = hi;
+  return out;
+}
+
+/* ---------- scenari ---------- */
+function scenario(S, vars, livelli) {
+  const ov = { mult: {} };
+  vars.forEach(vr => applica(S, vr, livelli[vr.id] || "b", ov));
+  return valuta(S, ov);
+}
+
+/* ---------- calcolo completo ---------- */
+function calcola(S) {
+  const base = valuta(S);
+  const r = base.r;
+  const vars = variabili(S);
+  const esito = rispetta(S, base);
+  const tornado = vars.map(vr => {
+    const u = valuta(S, applica(S, vr, "u")), f = valuta(S, applica(S, vr, "f"));
+    const eu = rispetta(S, u);
+    return { v: vr, u: u, f: f, regge: eu.ok, eu: eu, soglie: esito.ok ? soglieVar(S, vr, base) : null };
+  });
+  const tuttiU = {}, tuttiF = {};
+  vars.forEach(vr => { tuttiU[vr.id] = "u"; tuttiF[vr.id] = "f"; });
+  const scen = [
+    { id: "pess", nome: "Pessimistico", fisso: true, livelli: tuttiU },
+    { id: "base", nome: "Base", fisso: true, livelli: {} },
+    { id: "ott", nome: "Ottimistico", fisso: true, livelli: tuttiF }
+  ].concat((S.sens.scenari || []).map(s => ({ id: s.id, nome: s.nome, fisso: false, livelli: s.livelli || {} })));
+  scen.forEach(s => { s.k = scenario(S, vars, s.livelli); s.esito = rispetta(S, s.k); });
+  const haBen = S.voci.some(v => v.tipo === "ben");
+  const benefici = esito.ok && haBen ? soglieVar(S, { tipo: "benefici" }, base) : null;
+  /* peso delle voci */
+  const pv = {}; let pvBen = 0, pvCosti = 0;
+  S.voci.forEach(v => { pv[v.id] = va(base.voci[v.id], r); if (v.tipo === "ben") pvBen += pv[v.id]; else pvCosti += pv[v.id]; });
+  const deboli = tornado.filter(t => !t.regge);
+  const stato = !esito.ok ? "bad" : deboli.length ? "warn" : "ok";
+  return { base: base, vars: vars, tornado: tornado, scen: scen, esito: esito, stato: stato, deboli: deboli, benefici: benefici, pv: pv, pvBen: pvBen, pvCosti: pvCosti };
+}
+
+/* ---------- controlli ---------- */
+function controlli(S, R) {
+  const out = [];
+  const add = (sev, cod, par, voce) => out.push({ sev: sev, cod: cod, par: par || [], voce: voce || null });
+  const P = S.proj, a0 = Math.round(nz(P.anno0));
+  const ben = S.voci.filter(v => v.tipo === "ben"), capex = S.voci.filter(v => v.tipo === "capex"), opex = S.voci.filter(v => v.tipo === "opex");
+  const tot = id => somma(R.base.voci[id]);
+  if (!ben.length || somma(R.base.ben) === 0) add("err", "noBen");
+  if ((!capex.length && !opex.length) || somma(R.base.out) === 0) add("err", "noCosti");
+  if (nz(P.tasso) <= 0) add("warn", "tasso0");
+  if (!(nz(P.pbMax) > 0)) add("info", "noPbMax");
+  if (NY !== 10) add("info", "orizzonteDiverso", [NY]);
+  if (somma(R.base.ben) > 0 && somma(R.base.out) > 0) {
+    if (!R.esito.vanOk) add("err", "vanNeg");
+    if (!R.esito.pbOk) add("err", R.base.pb === null ? "pbMai" : "pbOltre", [R.base.pb, nz(P.pbMax)]);
+    R.deboli.forEach(t => add("warn", "nonRegge", [t.v, t.u]));
+  }
+  /* ultimo anno con benefici, anno di fine progetto */
+  let ultimoBen = -1; for (let i = 0; i < NY; i++) if (R.base.ben[i] > 0) ultimoBen = i;
+  const fine = /^\d{4}/.test(P.dataFine || "") ? parseInt(P.dataFine.slice(0, 4), 10) - a0 : null;
+  ben.forEach(v => {
+    const a = R.base.voci[v.id], mx = Math.max.apply(null, a);
+    if (mx > 0 && R.pvBen > 0 && ben.length > 1 && R.pv[v.id] / R.pvBen > 0.5) add("warn", "concentrato", [R.pv[v.id] / R.pvBen * 100], v);
+    if (fine !== null && fine >= 0 && fine < NY && mx > 0) {
+      let prima = -1; for (let i = 0; i <= fine; i++) if (a[i] >= mx * 0.999) { prima = i; break; }
+      if (prima >= 0) add("warn", "regimeSubito", [a0 + prima, a0 + fine], v);
+    }
+    if (v.modo === "ins") {
+      const n = insNetto(v);
+      if (n.evitata > 0 && n.interno === 0) add("warn", "insSenzaCosto", [], v);
+      else if (n.netto <= 0 && n.evitata > 0) add("warn", "insNegativo", [], v);
+    }
+  });
+  opex.forEach(v => {
+    const a = R.base.voci[v.id]; let n = 0, ultimo = -1;
+    for (let i = 0; i < NY; i++) if (a[i] > 0) { n++; ultimo = i; }
+    const ricorrente = v.cat !== CAT_OPEX[0] && v.cat !== CAT_OPEX[2];
+    if (ricorrente && n >= 2 && ultimo < ultimoBen) add("info", "costoSiFerma", [a0 + ultimo, a0 + ultimoBen], v);
+  });
+  if (somma(R.base.capex) > 0 && !capex.some(v => v.cat === "Contingency" && tot(v.id) > 0)) add("info", "noContingency");
+  S.voci.forEach(v => {
+    const lato = v.tipo === "ben" ? R.pvBen : R.pvCosti, n = v.tipo === "ben" ? ben.length : capex.length + opex.length;
+    const peso = lato > 0 ? R.pv[v.id] / lato : 0;
+    const sf = nz(v.sfav), fv = nz(v.fav);
+    if (tot(v.id) === 0) { add("info", "vuota", [], v); return; }
+    if (peso >= 0.1 && !sf && !fv) add("warn", "noRange", [peso * 100], v);
+    if (peso >= 0.1 && !(v.fonte || "").trim()) add("info", "noFonte", [peso * 100], v);
+    if (n > 1 && peso > 0 && peso < 0.01) add("info", "trascurabile", [peso * 100], v);
+    if (sf || fv) {
+      const peggio = v.tipo === "ben" ? sf > 0 : sf < 0;
+      const invertito = v.tipo === "ben" ? sf > fv : sf < fv;
+      if (peggio || invertito) add("warn", "rangeInvertito", [], v);
+    }
+  });
+  const ord = { err: 0, warn: 1, info: 2 };
+  out.sort((x, y) => ord[x.sev] - ord[y.sev]);
+  return out;
+}
+
+if (typeof module !== "undefined") module.exports = { setNY, conOrizzonte, adatta, converti, haImporti, oltreOrizzonte, orizzonte, nz, zeri, somma, nuovaVoce, nuovoProgetto, migrate, importi, insNetto, valuta, calcola, controlli, variabili, applica, soglieVar, va, slitta };
+
+/* ============================================================
+   TRADUZIONI: la chiave è il testo italiano
+   ============================================================ */
+const EN = {
+  "non rientra": "not recovered",
+  "Ritardo dei benefici": "Delay in benefits",
+  "Tasso di sconto": "Discount rate",
+  "Tutti i benefici insieme": "All benefits together",
+  "(senza nome)": "(unnamed)",
+  "{0} / nessuno": "{0} / none",
+  "range diversi per voce": "different ranges per item",
+  "1 mese": "1 month",
+  "{0} mesi": "{0} months",
+  "1 anno": "1 year",
+  "{0} anni": "{0} years",
+  "Beneficio": "Benefit",
+  "Nessuna variabile: assegna un range ad almeno una voce.": "No variables yet: give at least one item a range.",
+  "anni": "years",
+  "VAN ai due estremi di ogni variabile": "NPV at the two ends of each variable",
+  "Payback ai due estremi di ogni variabile": "Payback at the two ends of each variable",
+  "estremo sfavorevole": "unfavourable end",
+  "estremo favorevole": "favourable end",
+  "Caso base {0}": "Base case {0}",
+  "Limite {0} anni": "{0}-year limit",
+  "VAN = 0": "NPV = 0",
+  "Estremo sfavorevole del range": "Unfavourable end of the range",
+  "Estremo favorevole del range": "Favourable end of the range",
+  "Flusso netto annuo e cumulato attualizzato": "Annual net cash flow and discounted cumulative cash flow",
+  "Payback attualizzato {0} anni": "Discounted payback {0} years",
+  "Flusso netto": "Net cash flow",
+  "Attualizzato": "Discounted",
+  "Cumulato attualizzato": "Discounted cumulative",
+  "Flusso netto annuo": "Annual net cash flow",
+  "Costi, benefici e rischio: dal business case al responso.": "Costs, benefits and risk: from business case to verdict.",
+  "Progetto": "Project",
+  "Nome del progetto": "Project name",
+  "Tema chiaro": "Light theme",
+  "Tema scuro": "Dark theme",
+  "Progetto di esempio.": "Example project.",
+  "I numeri sono inventati e servono solo a mostrare come funziona l'app.": "The numbers are made up and only show how the app works.",
+  "Nuovo progetto": "New project",
+  "Importa file": "Import file",
+  "Dati del progetto": "Project details",
+  "Project manager": "Project manager",
+  "Sito o unità": "Site or unit",
+  "Benefit owner": "Benefit owner",
+  "Data di inizio": "Start date",
+  "Data di fine": "End date",
+  "Valuta e unità": "Currency and unit",
+  "Criteri di approvazione": "Approval criteria",
+  "Primo anno": "First year",
+  "Tasso di sconto %": "Discount rate %",
+  "Payback massimo (anni)": "Maximum payback (years)",
+  "Vuoto = nessun limite.": "Empty = no limit.",
+  "Payback usato come criterio": "Payback used as the criterion",
+  "Semplice": "Simple",
+  "Descrizione del caso": "Case description",
+  "Questi testi finiscono nel report. Spiegare il caso conta quanto i numeri.": "These texts go into the report. Explaining the case matters as much as the numbers.",
+  "Contesto": "Background",
+  "Benefici principali e risultati attesi": "Main benefits and deliverables",
+  "Benefici non misurabili (fuori dal calcolo)": "Non-measurable benefits (not in the calculation)",
+  "Rischi, effetti collaterali e alternative considerate": "Risks, side effects and alternatives considered",
+  "Ipotesi di calcolo": "Calculation assumptions",
+  "Baseline, volumi, tariffe: tutto ciò che serve a rifare il conto.": "Baseline, volumes, rates: everything needed to redo the calculation.",
+  "Payback semplice": "Simple payback",
+  "Payback attualizzato": "Discounted payback",
+  "VAN al {0}": "NPV at {0}",
+  "Cash out totale": "Total cash out",
+  "Importi per anno": "Amounts per year",
+  "Quantità × valore": "Quantity × value",
+  "Range": "Range",
+  "{0} sul totale": "{0} of the total",
+  "Chiudi": "Close",
+  "Dettagli": "Details",
+  "Insourcing: spesa evitata meno costo interno": "Insourcing: spend avoided minus in-house cost",
+  "Metodo": "Method",
+  "Testa il ritardo dei benefici": "Test a delay in benefits",
+  "Testa il tasso di sconto": "Test the discount rate",
+  "sfavorevole": "unfavourable",
+  "favorevole": "favourable",
+  "Composizione": "What it combines",
+  "Tutte le variabili all'estremo sfavorevole": "Every variable at its unfavourable end",
+  "Tutte le variabili all'estremo favorevole": "Every variable at its favourable end",
+  "Tutte le variabili al valore base": "Every variable at base value",
+  "nessuno": "none",
+  "Insourcing": "Insourcing",
+  "unità": "unit",
+  "% del regime": "% of full run-rate",
+  "Nome del beneficio": "Benefit name",
+  "Nome del costo": "Cost name",
+  "Calcolo dell'insourcing": "Insourcing calculation",
+  "Il beneficio è la spesa che smetti di pagare al fornitore meno quello che spendi per produrre in casa lo stesso volume. Negli anni della tabella inserisci la percentuale di regime raggiunta.": "The benefit is the spend you stop paying the supplier minus what it costs to make the same volume in-house. In the year cells of the table, enter the share of full run-rate reached.",
+  "Spesa annua attuale verso il fornitore": "Current annual spend with the supplier",
+  "Quota internalizzata %": "Share brought in-house %",
+  "Materiali interni per anno": "In-house materials per year",
+  "Ore interne per anno": "In-house hours per year",
+  "Tariffa oraria": "Hourly rate",
+  "Altri costi interni per anno": "Other in-house costs per year",
+  "Spesa evitata": "Spend avoided",
+  "costo interno": "in-house cost",
+  "beneficio a regime": "benefit at full run-rate",
+  "anno": "year",
+  "Origine del dato": "Where the number comes from",
+  "Categoria del template": "Template category",
+  "Unità di misura della quantità": "Unit of the quantity",
+  "Fonte del dato": "Source of the number",
+  "Preventivo, misura, calcolo, ipotesi…": "Quote, measurement, calculation, assumption…",
+  "Certezza del dato": "How certain the number is",
+  "Preventivo o contratto": "Quote or contract",
+  "Misurato sul campo": "Measured on site",
+  "Stima": "Estimate",
+  "Ipotesi": "Assumption",
+  "Ipotesi e range": "Assumptions and ranges",
+  "Note": "Notes",
+  "Range di rischio": "Risk range",
+  "Di quanto può sbagliare questa voce, in percentuale dell'importo. Per un beneficio l'estremo sfavorevole è negativo. Le voci con lo stesso gruppo si muovono insieme, come un'unica variabile.": "How far this item could be off, as a percentage of the amount. For a benefit the unfavourable end is negative. Items with the same group move together, as one variable.",
+  "Di quanto può sbagliare questa voce, in percentuale dell'importo. Per un costo l'estremo sfavorevole è positivo. Le voci con lo stesso gruppo si muovono insieme, come un'unica variabile.": "How far this item could be off, as a percentage of the amount. For a cost the unfavourable end is positive. Items with the same group move together, as one variable.",
+  "Sfavorevole %": "Unfavourable %",
+  "Favorevole %": "Favourable %",
+  "Gruppo di sensitivity": "Sensitivity group",
+  "facoltativo": "optional",
+  "Usa il range suggerito: {0}% / {1}%": "Use the suggested range: {0}% / {1}%",
+  "Riempimento rapido": "Quick fill",
+  "Quantità per anno": "Quantity per year",
+  "Importo per anno": "Amount per year",
+  "Dal": "From",
+  "Al": "To",
+  "Applica agli anni scelti": "Apply to the chosen years",
+  "valore attuale": "present value",
+  "peso sui benefici": "share of benefits",
+  "peso sui costi": "share of costs",
+  "Duplica la voce": "Duplicate the item",
+  "Voce": "Item",
+  "Come la inserisci": "How you enter it",
+  "Valore unitario": "Unit value",
+  "Totale": "Total",
+  "Ancora nessuna voce.": "No items yet.",
+  "Benefici": "Benefits",
+  "Solo effetti reali sul flusso di cassa: risparmi, costi evitati, margine aggiuntivo. Scrivi importi positivi. Nei dettagli scegli come inserire la voce: nelle righe a quantità scrivi le quantità anno per anno e sotto ogni casella compare l'importo calcolato.": "Only real effects on cash flow: savings, avoided costs, extra margin. Enter positive amounts. In the details choose how to enter the item: in quantity rows enter the quantity for each year and the calculated amount appears under each cell.",
+  "Aggiungi un beneficio": "Add a benefit",
+  "Totale benefici": "Total benefits",
+  "CAPEX": "CAPEX",
+  "Investimenti. Scrivi importi positivi: l'app li tratta come uscite. La categoria del template e il range di rischio si scelgono nei dettagli.": "Investments. Enter positive amounts: the app treats them as cash out. Pick the template category and the risk range in the details.",
+  "Aggiungi un investimento": "Add an investment",
+  "Totale CAPEX": "Total CAPEX",
+  "OPEX": "OPEX",
+  "Costi di progetto e costi ricorrenti che nascono dal progetto. Scrivi importi positivi.": "Project costs and recurring costs caused by the project. Enter positive amounts.",
+  "Aggiungi un costo": "Add a cost",
+  "Totale OPEX": "Total OPEX",
+  "Responso": "Verdict",
+  "Inserisci benefici e costi per avere il responso.": "Enter benefits and costs to get the verdict.",
+  "VAN {0} {1} al {2}.": "NPV {0} {1} at {2}.",
+  "Payback {0} anni: {1} sotto il limite di {2}.": "Payback {0} years: {1} inside the {2}-year limit.",
+  "Payback {0} anni: oltre il limite di {1}.": "Payback {0} years: beyond the {1}-year limit.",
+  "Payback {0} anni.": "Payback {0} years.",
+  "Non rispetta i criteri di approvazione.": "It does not meet the approval criteria.",
+  "Rispetta i criteri, ma con margine ridotto.": "It meets the criteria, but with little margin.",
+  "Non regge a: {0}.": "It does not hold under: {0}.",
+  "Rispetta i criteri e regge a ogni rischio testato.": "It meets the criteria and holds under every risk tested.",
+  "Rispetta i criteri. Nessun rischio ancora testato.": "It meets the criteria. No risk tested yet.",
+  "Totale cash out": "Total cash out",
+  "Flusso cumulato": "Cumulative cash flow",
+  "Flusso attualizzato": "Discounted cash flow",
+  "Tipo": "Type",
+  "Valore attuale": "Present value",
+  "Peso sul suo lato": "Share of its side",
+  "criterio di approvazione": "approval criterion",
+  "TIR, il rendimento del progetto": "IRR, the project's own return",
+  "Flussi di cassa": "Cash flows",
+  "Il payback si conta dall'inizio del primo anno: è il punto in cui il cumulato torna a zero.": "Payback is counted from the start of the first year: it is the point where the cumulative flow is back to zero.",
+  "Cosa regge il risultato": "What the result rests on",
+  "Il peso è calcolato sul valore attuale. Le voci in cima sono quelle da validare meglio.": "Shares are based on present value. The items at the top are the ones to validate first.",
+  "il VAN resta {0}": "NPV is still {0}",
+  "il payback resta {0}": "payback is still {0}",
+  "Mai: anche azzerando la voce {0}": "Never: even with the item at zero, {0}",
+  "Mai entro {0}%": "Never within {0}%",
+  "Mai entro {0} anni": "Never within {0} years",
+  "Mai entro il {0}%": "Never up to {0}%",
+  "Mai: anche a zero {0}": "Never: even at zero, {0}",
+  "{0} in totale": "{0} in total",
+  "(è il TIR)": "(the IRR)",
+  "Variabile": "Variable",
+  "Range testato": "Range tested",
+  "VAN sfavorevole": "NPV, unfavourable",
+  "VAN favorevole": "NPV, favourable",
+  "Oscillazione": "Swing",
+  "Payback sfavorevole": "Payback, unfavourable",
+  "Payback favorevole": "Payback, favourable",
+  "Esito": "Outcome",
+  "regge": "holds",
+  "non regge": "does not hold",
+  "Estremo sfavorevole testato": "Unfavourable end tested",
+  "Il VAN va a zero a": "NPV reaches zero at",
+  "Il payback arriva a {0} anni a": "Payback reaches {0} years at",
+  "Sfavorevole": "Unfavourable",
+  "Base": "Base",
+  "Favorevole": "Favourable",
+  "Scenario": "Scenario",
+  "VAN": "NPV",
+  "Payback": "Payback",
+  "rispetta i criteri": "meets the criteria",
+  "non li rispetta": "does not meet them",
+  "Elimina lo scenario": "Delete the scenario",
+  "Range delle voci": "Item ranges",
+  "Per ogni voce incerta indica di quanto può sbagliare. Una voce senza range resta ferma al valore base. Dai a più voci lo stesso gruppo per muoverle insieme, per esempio tutto il CAPEX.": "For each uncertain item, say how far it could be off. An item with no range stays at its base value. Give several items the same group to move them together, for example all CAPEX.",
+  "Gruppo": "Group",
+  "Variabili generali": "General variables",
+  "Il ritardo sposta in avanti tutti i benefici lasciando fermi i costi. Il tasso mostra se il risultato dipende dal rendimento richiesto.": "The delay pushes all benefits later and leaves costs where they are. The rate shows whether the result depends on the required return.",
+  "Ritardo massimo (anni)": "Maximum delay (years)",
+  "Anche frazioni: 0,5 = sei mesi.": "Fractions allowed: 0.5 = six months.",
+  "Tasso favorevole %": "Favourable rate %",
+  "Tasso sfavorevole %": "Unfavourable rate %",
+  "Quanto si muove il VAN": "How far NPV moves",
+  "Una variabile alla volta fino ai due estremi, le altre ferme al valore base. In cima quella che pesa di più.": "One variable at a time to both ends, the others held at base. The one that matters most is at the top.",
+  "Quanto si muove il payback": "How far payback moves",
+  "Le barre che superano la linea del limite indicano i rischi che da soli fanno saltare il criterio.": "Bars that cross the limit line are the risks that break the criterion on their own.",
+  "Imposta un payback massimo nella scheda Progetto per vedere il limite.": "Set a maximum payback in the Project tab to see the limit.",
+  "I numeri del tornado": "The numbers behind the tornado",
+  "Soglie di rottura": "Break-even thresholds",
+  "Di quanto può peggiorare ogni variabile, da sola, prima che il progetto smetta di rispettare un criterio. Più la soglia è lontana dall'estremo testato, più il progetto è solido su quel punto.": "How much worse each variable can get, on its own, before the project stops meeting a criterion. The further the threshold is from the tested end, the more robust the project is on that point.",
+  "La soglia sul ritardo è interpolata, perché il modello ragiona per anni interi.": "The delay threshold is interpolated, because the model works in whole years.",
+  "Il caso base non rispetta già i criteri: le soglie non si calcolano.": "The base case already fails the criteria: thresholds are not calculated.",
+  "Scenari": "Scenarios",
+  "Nella realtà i problemi arrivano insieme. Il pessimistico mette tutte le variabili all'estremo sfavorevole; aggiungi i tuoi scenari per le combinazioni che ritieni plausibili.": "In real life problems come together. The pessimistic scenario puts every variable at its unfavourable end; add your own scenarios for the combinations you find plausible.",
+  "Nome del nuovo scenario": "Name of the new scenario",
+  "Aggiungi scenario": "Add scenario",
+  "Nessun beneficio inserito": "No benefits entered",
+  "Aggiungi almeno un beneficio nella scheda Benefici e costi.": "Add at least one benefit in the Benefits and costs tab.",
+  "Nessun costo inserito": "No costs entered",
+  "Un caso senza CAPEX né OPEX non ha payback: inserisci l'investimento.": "A case with no CAPEX or OPEX has no payback: enter the investment.",
+  "Tasso di sconto a zero": "Discount rate is zero",
+  "Con tasso zero il VAN coincide con il flusso netto. Inserisci il tasso aziendale nella scheda Progetto.": "With a zero rate NPV equals the net cash flow. Enter the company rate in the Project tab.",
+  "Payback massimo non impostato": "No maximum payback set",
+  "Senza limite il responso guarda solo il VAN. Impostalo nella scheda Progetto se l'azienda ne richiede uno.": "Without a limit the verdict looks at NPV only. Set it in the Project tab if the company requires one.",
+  "VAN negativo": "Negative NPV",
+  "Ai valori base il progetto rende meno del tasso richiesto.": "At base values the project returns less than the required rate.",
+  "Payback oltre il limite": "Payback beyond the limit",
+  "Il payback è {0} anni contro un massimo di {1}.": "Payback is {0} years against a maximum of {1}.",
+  "L'investimento non rientra": "The investment is not recovered",
+  "Non regge a: {0}": "Does not hold under: {0}",
+  "All'estremo sfavorevole ({0}) il VAN è {1} e il payback {2}.": "At the unfavourable end ({0}) NPV is {1} and payback is {2}.",
+  "{0}: beneficio a regime già nel {1}": "{0}: benefit already at full run-rate in {1}",
+  "Il progetto finisce nel {0}. Se il beneficio dipende dal progetto, riduci il primo anno; se non dipende, scrivilo nella fonte.": "The project ends in {0}. If the benefit depends on the project, reduce the first year; if it does not, say so in the source.",
+  "{0} pesa il {1} dei benefici": "{0} is {1} of the benefits",
+  "Più di metà del caso poggia su una sola voce: è la prima da validare e da testare nella sensitivity.": "More than half of the case rests on one item: it is the first to validate and to test in the sensitivity.",
+  "{0}: insourcing senza costo interno": "{0}: insourcing with no in-house cost",
+  "La spesa evitata verso il fornitore non è un guadagno finché non togli il costo per produrre in casa.": "The spend avoided with the supplier is not a gain until you subtract the cost of making it in-house.",
+  "{0}: produrre in casa costa più che comprare": "{0}: making it in-house costs more than buying",
+  "Il costo interno supera la spesa evitata: il beneficio è nullo o negativo.": "The in-house cost exceeds the spend avoided: the benefit is zero or negative.",
+  "{0}: il costo si ferma nel {1}": "{0}: the cost stops in {1}",
+  "I benefici continuano fino al {0}. Se il costo è ricorrente, estendilo.": "Benefits run until {0}. If the cost is recurring, extend it.",
+  "CAPEX senza contingency": "CAPEX with no contingency",
+  "Nessuna voce in categoria Contingency. Se gli importi sono stime, valuta una riserva.": "No item in the Contingency category. If the amounts are estimates, consider a reserve.",
+  "{0}: voce senza importi": "{0}: item with no amounts",
+  "Compila gli anni oppure elimina la voce.": "Fill in the years or delete the item.",
+  "{0}: manca il range di rischio": "{0}: no risk range",
+  "Pesa il {0} del suo lato e non entra nella sensitivity.": "It is {0} of its side and is left out of the sensitivity.",
+  "{0}: manca la fonte del dato": "{0}: no source for the number",
+  "Pesa il {0}: chi approva chiederà da dove viene il numero.": "It is {0} of its side: whoever approves will ask where the number comes from.",
+  "{0} pesa meno dell'1%": "{0} is under 1%",
+  "Verifica l'unità di misura: un importo in migliaia in mezzo a importi in unità produce questo effetto.": "Check the unit: an amount in thousands among amounts in units has this effect.",
+  "{0}: range invertito": "{0}: range the wrong way round",
+  "L'estremo sfavorevole migliora il risultato o supera quello favorevole. Per un beneficio lo sfavorevole è negativo, per un costo è positivo.": "The unfavourable end improves the result or is better than the favourable one. For a benefit the unfavourable end is negative, for a cost it is positive.",
+  "Blocca": "Blocking",
+  "Attenzione": "Warning",
+  "Nota": "Note",
+  "Controlli automatici": "Automatic checks",
+  "Le domande che farebbe un controller prima di firmare. Non bloccano nulla: servono a non farsi trovare impreparati.": "The questions a controller would ask before signing. They block nothing: they are there so you are not caught unprepared.",
+  "Nessun rilievo: i controlli non segnalano nulla.": "Nothing to report: the checks raise no points.",
+  "Apri la voce": "Open the item",
+  "Istantanee": "Snapshots",
+  "Salva una fotografia del caso prima di cambiarlo: potrai confrontarla con la versione attuale e vedere cosa ha spostato il risultato. Le istantanee viaggiano dentro il file esportato.": "Save a picture of the case before you change it: you can compare it with the current version and see what moved the result. Snapshots travel inside the exported file.",
+  "Nome dell'istantanea, per esempio «Inviata al controller»": "Snapshot name, for example “Sent to the controller”",
+  "Salva istantanea": "Save snapshot",
+  "Ancora nessuna istantanea.": "No snapshots yet.",
+  "Istantanea": "Snapshot",
+  "Salvata il": "Saved on",
+  "Chiudi il confronto": "Close the comparison",
+  "Confronta con l'attuale": "Compare with current",
+  "Ripristina": "Restore",
+  "Elimina l'istantanea": "Delete the snapshot",
+  "Da «{0}» a oggi": "From “{0}” to now",
+  "Attuale": "Current",
+  "Differenza": "Difference",
+  "Payback (anni)": "Payback (years)",
+  "TIR": "IRR",
+  "aggiunta": "added",
+  "tolta": "removed",
+  "Voci cambiate": "Items that changed",
+  "Totale nell'istantanea": "Total in the snapshot",
+  "Totale attuale": "Current total",
+  "Effetto sul VAN": "Effect on NPV",
+  "L'effetto sul VAN è calcolato al tasso attuale, voce per voce.": "The effect on NPV is calculated at the current rate, item by item.",
+  "Nessuna voce è cambiata.": "No item has changed.",
+  "Analisi costi-benefici con sensitivity": "Cost-benefit analysis with sensitivity",
+  "Progetto senza nome": "Unnamed project",
+  "limite {0} anni": "{0}-year limit",
+  "Ogni variabile è stata portata da sola ai due estremi del suo range, con le altre ferme al valore base.": "Each variable was moved on its own to both ends of its range, with the others held at base.",
+  "fermo al valore base": "held at base value",
+  "Vista VAN": "NPV view",
+  "Preso un rischio alla volta, il VAN resta fra {0} e {1}, contro un caso base di {2}. La variabile che lo sposta di più è: {3}.": "Taking one risk at a time, NPV stays between {0} and {1}, against a base case of {2}. The variable that moves it most is: {3}.",
+  "Il payback va da {0} a {1} anni.": "Payback ranges from {0} to {1} years.",
+  "Supera il limite di {0} anni con: {1}.": "It goes beyond the {0}-year limit with: {1}.",
+  "Nessuna variabile, da sola, lo porta oltre il limite di {0} anni.": "No single variable takes it beyond the {0}-year limit.",
+  "Vista payback": "Payback view",
+  "Di quanto può peggiorare ogni variabile, da sola, prima che il progetto smetta di rispettare un criterio.": "How much worse each variable can get, on its own, before the project stops meeting a criterion.",
+  "Punti di attenzione": "Points to watch",
+  "Generato con RECKONING {0}. Stesse regole di calcolo del template CBA: primo anno non scontato, payback contato dall'inizio del primo anno.": "Generated with RECKONING {0}. Same calculation rules as the CBA template: first year not discounted, payback counted from the start of the first year.",
+  "Report": "Report",
+  "Un foglio sobrio da allegare alla richiesta di approvazione. Puoi scriverlo in una lingua diversa da quella dell'app. Nella finestra di stampa scegli «Salva come PDF» per ottenere il file.": "A plain sheet to attach to the approval request. You can write it in a different language from the app. In the print dialog choose “Save as PDF” to get the file.",
+  "Lingua del report": "Report language",
+  "Stampa o salva in PDF": "Print or save as PDF",
+  "File del progetto": "Project file",
+  "L'app salva da sola nel browser di questo computer. Il file è la copia che conta: esportalo per conservare il caso, passarlo a un collega o spostarti su un altro computer. Contiene anche le istantanee.": "The app saves by itself in this computer's browser. The file is the copy that counts: export it to keep the case, hand it to a colleague or move to another computer. It includes the snapshots.",
+  "Esporta file": "Export file",
+  "Esporta CSV per il template": "Export CSV for the template",
+  "Il CSV riporta le righe nell'ordine del foglio CBA del template, con i costi in negativo, pronte da copiare.": "The CSV lists the rows in the order of the template's CBA sheet, with costs as negatives, ready to copy.",
+  "Ricominciare": "Start over",
+  "Carica l'esempio": "Load the example",
+  "Guida": "Guide",
+  "Come si usa": "How to use it",
+  "Progetto: inserisci i dati generali e i criteri di approvazione, cioè tasso di sconto e payback massimo.": "Project: enter the general details and the approval criteria, that is the discount rate and the maximum payback.",
+  "Benefici e costi: una riga per voce. Dove puoi, costruisci l'importo da quantità e valore unitario e scrivi la fonte.": "Benefits and costs: one row per item. Where you can, build the amount from quantity and unit value and write down the source.",
+  "Per ogni voce incerta apri i dettagli e indica il range di rischio.": "For each uncertain item open the details and set the risk range.",
+  "Responso: leggi VAN, payback e l'esito rispetto ai criteri.": "Verdict: read NPV, payback and the outcome against the criteria.",
+  "Sensitivity: guarda quali variabili pesano e quanto margine resta prima di rompere un criterio.": "Sensitivity: see which variables matter and how much margin is left before a criterion breaks.",
+  "Controlli: risolvi i rilievi o preparati a spiegarli.": "Checks: fix the points raised or be ready to explain them.",
+  "Versioni: salva un'istantanea prima di ogni modifica importante.": "Versions: save a snapshot before every important change.",
+  "Report: stampa il foglio per chi approva.": "Report: print the sheet for whoever approves.",
+  "Parole chiave": "Key terms",
+  "VAN, valore attuale netto": "NPV, net present value",
+  "Gli anni necessari perché i flussi cumulati tornino a zero, contati dall'inizio del primo anno. Quello attualizzato usa i flussi scontati.": "The years needed for cumulative cash flow to get back to zero, counted from the start of the first year. The discounted one uses discounted flows.",
+  "TIR, tasso interno di rendimento": "IRR, internal rate of return",
+  "Il tasso di sconto che porterebbe il VAN a zero: è il rendimento effettivo del progetto.": "The discount rate that would bring NPV to zero: the project's actual return.",
+  "Di quanto una voce può scostarsi dal valore base, nel caso sfavorevole e in quello favorevole. Va scelto in base a quanto è certo il dato, non uguale per tutti.": "How far an item can move from its base value, in the unfavourable and the favourable case. Choose it by how certain the number is, not the same for every item.",
+  "Tornado": "Tornado",
+  "Il grafico che ordina le variabili per quanto spostano il risultato, muovendone una alla volta.": "The chart that ranks variables by how much they move the result, changing one at a time.",
+  "Soglia di rottura": "Break-even threshold",
+  "Il valore di una variabile che porta il VAN a zero o il payback al limite, con tutte le altre al valore base.": "The value of a variable that brings NPV to zero or payback to the limit, with all the others at base.",
+  "Portare in casa una lavorazione oggi acquistata. Il beneficio è la differenza fra spesa evitata e costo interno, mai l'intero volume d'acquisto.": "Bringing in-house work that is bought today. The benefit is the difference between spend avoided and in-house cost, never the whole purchase volume.",
+  "Regole di calcolo": "Calculation rules",
+  "Payback = periodo in cui il cumulato diventa positivo, meno 1, più la quota dell'anno necessaria a coprire il residuo.": "Payback = the period in which the cumulative flow turns positive, minus 1, plus the share of that year needed to cover what is left.",
+  "Il ritardo sposta tutti i benefici e lascia fermi i costi. Le frazioni di anno sono interpolate.": "The delay moves all benefits and leaves costs where they are. Fractions of a year are interpolated.",
+  "Nella sensitivity una voce non scende mai sotto zero.": "In the sensitivity an item never goes below zero.",
+  "L'app non sostituisce il template ufficiale: usa le stesse formule per VAN e payback e serve a costruire e mettere alla prova il caso. Il prezzo interno del carbonio (ICP) del template non è incluso in questa versione.": "The app does not replace the official template: it uses the same formulas for NPV and payback and is for building and stress-testing the case. The template's internal carbon price (ICP) is not included in this version.",
+  "Esempio: cella robotizzata di saldatura": "Example: robotic welding cell",
+  "Stabilimento di esempio": "Example plant",
+  "La saldatura manuale è il collo di bottiglia del reparto. Una cella robotizzata libera ore, riduce le rilavorazioni e permette di riportare in casa una lavorazione oggi acquistata.": "Manual welding is the department's bottleneck. A robotic cell frees up hours, cuts rework and makes it possible to bring in-house a job that is bought today.",
+  "3.000 ore di saldatura risparmiate all'anno a regime, rilavorazioni dimezzate, staffe prodotte internamente.": "3,000 welding hours saved per year at full run-rate, rework halved, brackets made in-house.",
+  "Minore esposizione degli operatori ai fumi, qualità più costante.": "Less operator exposure to fumes, more consistent quality.",
+  "Tempi di messa a punto del robot più lunghi del previsto; in alternativa si potrebbe aggiungere un turno di saldatura manuale.": "Robot commissioning taking longer than planned; the alternative would be an extra manual welding shift.",
+  "Tariffa oraria di 55, volumi costanti, cella operativa dal secondo anno con salita graduale.": "Hourly rate of 55, constant volumes, cell running from the second year with a gradual ramp-up.",
+  "Ore di saldatura risparmiate": "Welding hours saved",
+  "Stima da prove del fornitore del robot": "Estimate from the robot supplier's trials",
+  "Rilavorazioni evitate": "Rework avoided",
+  "Costo delle rilavorazioni dell'ultimo anno, dimezzato": "Last year's rework cost, halved",
+  "Insourcing delle staffe": "Insourcing of brackets",
+  "Spesa a consuntivo verso il fornitore, distinta base interna": "Actual spend with the supplier, in-house bill of materials",
+  "Robot e attrezzature": "Robot and tooling",
+  "Preventivo del fornitore": "Supplier quote",
+  "Opere civili e impianti": "Civil works and utilities",
+  "Stima dell'ufficio tecnico": "Engineering department estimate",
+  "Circa il 10% dell'investimento": "About 10% of the investment",
+  "Manutenzione e formazione": "Maintenance and training",
+  "Contratto di manutenzione proposto": "Proposed maintenance contract",
+  "Salvato": "Saved",
+  "Non salvato nel browser: usa Esporta file": "Not saved in the browser: use Export file",
+  "Anno": "Year",
+  "(segno negativo)": "(negative sign)",
+  "Annulla": "Cancel",
+  "Numero non valido: usa solo cifre e un separatore decimale": "Not a valid number: use digits and one decimal separator only",
+  "{0} (copia)": "{0} (copy)",
+  "Eliminare la voce?": "Delete the item?",
+  "«{0}» verrà tolta dal caso. Se ti serve un confronto, salva prima un'istantanea.": "“{0}” will be removed from the case. If you want a comparison later, save a snapshot first.",
+  "Elimina": "Delete",
+  "Scenario {0}": "Scenario {0}",
+  "Istantanea {0}": "Snapshot {0}",
+  "Istantanea salvata": "Snapshot saved",
+  "Eliminare l'istantanea?": "Delete the snapshot?",
+  "«{0}» non potrà essere recuperata.": "“{0}” cannot be recovered.",
+  "Ripristinare l'istantanea?": "Restore the snapshot?",
+  "Il caso attuale verrà sostituito da «{0}». Le modifiche non salvate in un'istantanea andranno perse.": "The current case will be replaced by “{0}”. Changes not saved in a snapshot will be lost.",
+  "Iniziare un nuovo progetto?": "Start a new project?",
+  "Il caso aperto verrà sostituito da un progetto vuoto. Esporta prima il file se vuoi conservarlo.": "The open case will be replaced by an empty project. Export the file first if you want to keep it.",
+  "Caricare l'esempio?": "Load the example?",
+  "Il caso aperto verrà sostituito dal progetto di esempio. Esporta prima il file se vuoi conservarlo.": "The open case will be replaced by the example project. Export the file first if you want to keep it.",
+  "File importato": "File imported",
+  "File non leggibile: non è un salvataggio di RECKONING": "Unreadable file: this is not a RECKONING save",
+  "Benefici e costi": "Benefits and costs",
+  "Sensitivity": "Sensitivity",
+  "Controlli": "Checks",
+  "Versioni": "Versions",
+  "Dati e guida": "Data and guide",
+  "Pessimistico": "Pessimistic",
+  "Ottimistico": "Optimistic",
+  "Fabbricati": "Building",
+  "Macchinari e attrezzature": "Machinery & Equipment",
+  "Contingency": "Contingency",
+  "Altro": "Other",
+  "Gestione, installazione e ripristino": "Management, installation & rebuild",
+  "Costo del personale": "People cost",
+  "Costi di trasloco": "Moving cost",
+  "Valuta e unità degli importi": "Currency and unit of amounts",
+  "Tutti gli importi dell'app sono in {0}. Se cambi valuta o unità a caso già compilato, l'app ti chiede se convertire i numeri o cambiare solo l'etichetta.": "Every amount in the app is in {0}. If you change currency or unit once the case is filled in, the app asks whether to convert the numbers or change the label only.",
+  "Valuta": "Currency",
+  "Sigla libera, per esempio EUR, USD, SEK.": "Any code, for example EUR, USD, SEK.",
+  "Unità degli importi": "Unit of amounts",
+  "Unità": "Units",
+  "Migliaia (k)": "Thousands (k)",
+  "Milioni (M)": "Millions (M)",
+  "Esempio: duecentocinquantamila si scrive {0}.": "Example: two hundred and fifty thousand is written {0}.",
+  "Il responso confronta il progetto con questi valori. Il primo anno non viene scontato, come nel template CBA.": "The verdict compares the project with these values. The first year is not discounted, as in the CBA template.",
+  "Anni di simulazione": "Years simulated",
+  "Da {0} a {1}. Il template ne usa 10. Ultimo anno: {2}.": "From {0} to {1}. The template uses 10. Last year: {2}.",
+  "Benefici in {0} anni": "Benefits over {0} years",
+  "Totale {0} anni": "{0}-year total",
+  "L'investimento non rientra nei {0} anni.": "The investment is not recovered within {0} years.",
+  "Il flusso cumulato non torna positivo entro i {0} anni.": "The cumulative cash flow does not turn positive within {0} years.",
+  "Orizzonte di {0} anni invece di 10": "{0}-year horizon instead of 10",
+  "Il template CBA calcola su 10 anni: VAN e payback dell'app non coincideranno con quelli del template finché gli anni sono diversi.": "The CBA template calculates over 10 years: the app's NPV and payback will not match the template's while the number of years is different.",
+  "Benefici totali": "Total benefits",
+  "Orizzonte di {4} anni ({0}–{1}), tasso di sconto {2}, importi in {3}. Il primo anno non è scontato.": "{4}-year horizon ({0}–{1}), {2} discount rate, amounts in {3}. The first year is not discounted.",
+  "La somma dei flussi netti di tutti gli anni riportati a oggi con il tasso di sconto. Sopra zero il progetto rende più del tasso richiesto.": "The sum of every year's net cash flow brought back to today with the discount rate. Above zero, the project returns more than the required rate.",
+  "Orizzonte di 10 anni come nel template, modificabile da 3 a 20 nella scheda Progetto; il primo anno non è scontato, il secondo è scontato di un anno, e così via.": "10-year horizon as in the template, adjustable from 3 to 20 in the Project tab; the first year is not discounted, the second is discounted by one year, and so on.",
+  "Riducendo gli anni, gli importi oltre l'orizzonte restano salvati ma escono dal calcolo: tornano se lo allunghi di nuovo.": "When you shorten the horizon, amounts beyond it stay saved but drop out of the calculation: they come back if you lengthen it again.",
+  "Valuta e unità degli importi si cambiano nella scheda Progetto, convertendo i numeri oppure solo l'etichetta.": "Currency and unit of amounts are changed in the Project tab, converting the numbers or the label only.",
+  "Gli anni di simulazione vanno da {0} a {1}": "Years simulated must be between {0} and {1}",
+  "Gli importi dopo il {0} restano salvati ma escono dal calcolo": "Amounts after {0} stay saved but drop out of the calculation",
+  "Oggi gli importi sono in {0}. Passando a {1} puoi:": "Amounts are currently in {0}. Moving to {1}, you can:",
+  "Convertire gli importi": "Convert the amounts",
+  "I numeri vengono ricalcolati: {0} {1} diventa {2} {3}.": "The numbers are recalculated: {0} {1} becomes {2} {3}.",
+  "Cambiare solo l'etichetta": "Change the label only",
+  "I numeri restano uguali. Usalo se li avevi già scritti in {0}.": "The numbers stay the same. Use this if you had already entered them in {0}.",
+  "Cambiare l'unità degli importi?": "Change the unit of amounts?",
+  "Cambia solo l'etichetta": "Change the label only",
+  "Converti gli importi": "Convert the amounts",
+  "Oggi gli importi sono in {0}. Passando a {1} puoi convertirli a un cambio oppure cambiare solo l'etichetta, se i numeri erano già in {1}.": "Amounts are currently in {0}. Moving to {1}, you can convert them at an exchange rate or change the label only, if the numbers were already in {1}.",
+  "Cambio: 1 {0} =": "Rate: 1 {0} =",
+  "Cambiare valuta?": "Change currency?",
+  "Converti al cambio indicato": "Convert at this rate",
+  "Sottoassorbimento": "Under absorption"
+};
+
+/* ============================================================
+   VERSIONE / LINGUA / TEMA / STATO
+   ============================================================ */
+const VERSION = "v1.1";
+const KEY = "reckoning:state:v1";
+let LANG = "it";      /* lingua dell'interfaccia */
+let TL = "it";        /* lingua in cui si sta scrivendo adesso (il report può averne una sua) */
+let THEME = null;     /* null = segue il sistema */
+let S = null, R = null, CK = [];
+let DM = 0;           /* decimali degli importi: 0 in unità, 1 in migliaia, 3 in milioni */
+const UI = { tab: "progetto", open: {}, fill: {}, cmp: null, rlang: null, snapNome: "", scenNome: "" };
+
+function t(s) { return TL === "it" ? s : (EN[s] !== undefined ? EN[s] : s); }
+function tf(s) { const a = arguments; return t(s).replace(/\{(\d)\}/g, (m, i) => a[+i + 1]); }
+function esc(s) { return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+/* ---------- numeri ---------- */
+function grp(s, sep) { return s.replace(/\B(?=(\d{3})+(?!\d))/g, sep); }
+function fmt(n, dec) {
+  if (n == null || !isFinite(n)) return "–";
+  dec = dec == null ? DM : dec;
+  const it = TL === "it";
+  const parti = Math.abs(n).toFixed(dec).split(".");
+  let s = grp(parti[0], it ? "." : ",") + (parti[1] ? (it ? "," : ".") + parti[1] : "");
+  if (n < 0 && /[1-9]/.test(s)) s = "−" + s;
+  return s;
+}
+function decimali(n) { const s = (Math.round(n * 1e6) / 1e6).toFixed(6).replace(/\.?0+$/, ""); const i = s.indexOf("."); return i < 0 ? 0 : s.length - i - 1; }
+function fmtAuto(n) { return fmt(n, decimali(n)); }
+function grezzo(n) { const s = String(Math.round(n * 1e6) / 1e6); return LANG === "it" ? s.replace(".", ",") : s; }
+function fmtC(n) {
+  if (n == null || !isFinite(n)) return "–";
+  const a = Math.abs(n);
+  if (a >= 1e6) return fmt(n / 1e6, 2) + " M";
+  if (a >= 1e4) return fmt(n / 1e3, 0) + " k";
+  return fmt(n, DM);
+}
+function fmtPct(n, dec) { return fmt(n, dec == null ? 1 : dec) + "%"; }
+function sgn(n, dec) { return (n > 0 ? "+" : "") + fmt(n, dec || 0); }
+function sgnM(n) { return sgn(n, DM); }
+const SCALE = [[1, ""], [1000, "k"], [1000000, "M"]];
+function prefisso(scala) { const s = SCALE.find(x => x[0] === +scala); return s ? s[1] : ""; }
+function fmtPb(p) { return p == null ? t("non rientra") : fmt(p, 2); }
+function anni(i) { return Math.round(nz(S.proj.anno0)) + i; }
+function val() { return prefisso(S.proj.scala) + (S.proj.valuta || "").trim(); }
+/* legge un numero scritto a mano: solo cifre, segno e un separatore decimale (punto o virgola) */
+function leggiNumero(txt) {
+  const s = String(txt).replace(/\s/g, "").replace("−", "-");
+  if (s === "") return 0;
+  if (!/^-?\d+([.,]\d+)?$/.test(s)) return null;
+  return parseFloat(s.replace(",", "."));
+}
+
+/* ---------- campi ---------- */
+function numIn(id, path, v, cls, vuotoSeZero) {
+  const n = nz(v), vuoto = vuotoSeZero && !n;
+  const mostrato = vuoto ? "" : fmtAuto(n), raw = vuoto ? "" : grezzo(n);
+  return '<input class="num ' + (cls || "") + '" id="' + id + '" inputmode="decimal" autocomplete="off" data-p="' + path + '" data-t="n" data-raw="' + raw + '" data-fmt="' + mostrato + '" value="' + mostrato + '"' + (vuotoSeZero ? ' placeholder="–"' : "") + ">";
+}
+function txtIn(id, path, v, cls, ph) {
+  return '<input id="' + id + '" class="' + (cls || "") + '" data-p="' + path + '" data-t="s" value="' + esc(v) + '"' + (ph ? ' placeholder="' + esc(ph) + '"' : "") + ">";
+}
+function selIn(id, path, v, opzioni) {
+  return '<select id="' + id + '" data-p="' + path + '" data-t="s">' + opzioni.map(o => '<option value="' + esc(o[0]) + '"' + (o[0] === v ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select>";
+}
+function campo(label, id, inner, cls, sub) {
+  return '<div class="field ' + (cls || "") + '"><label for="' + id + '">' + esc(label) + "</label>" + inner + (sub ? '<span class="sub">' + esc(sub) + "</span>" : "") + "</div>";
+}
+function tag(cls, testo) { return '<span class="tag ' + cls + '">' + esc(testo) + "</span>"; }
+
+/* ---------- nomi delle variabili di sensitivity ---------- */
+function nomeVar(vr) {
+  if (vr.tipo === "ritardo") return t("Ritardo dei benefici");
+  if (vr.tipo === "tasso") return t("Tasso di sconto");
+  if (vr.tipo === "benefici") return t("Tutti i benefici insieme");
+  return vr.nome || t("(senza nome)");
+}
+function rangeVar(vr) {
+  if (vr.tipo === "ritardo") return tf("{0} / nessuno", durata(vr.anni, true));
+  if (vr.tipo === "tasso") return fmtPct(vr.max, decimali(vr.max)) + " / " + fmtPct(vr.min, decimali(vr.min));
+  const p = vr.parti, uguali = p.every(x => x.sfav === p[0].sfav && x.fav === p[0].fav);
+  if (uguali) return sgn(p[0].sfav, decimali(p[0].sfav)) + "% / " + sgn(p[0].fav, decimali(p[0].fav)) + "%";
+  /* gruppo con range diversi: variazione effettiva del totale del gruppo */
+  let tot = 0, du = 0, df = 0;
+  p.forEach(x => { const a = somma((R && R.base.voci[x.id]) || []); tot += a; du += a * Math.max(-100, x.sfav) / 100; df += a * Math.max(-100, x.fav) / 100; });
+  if (!tot) return t("range diversi per voce");
+  const pc = v => { const r = Math.round(v / tot * 1000) / 10; return sgn(r, decimali(r)) + "%"; };
+  return pc(du) + " / " + tf("{0} sul totale", pc(df));
+}
+function durata(x, segno) {
+  const pre = segno ? "+" : "";
+  if (x < 1.5 && Math.abs(x - 1) > 0.01) { const m = Math.round(x * 12); return pre + (m === 1 ? t("1 mese") : tf("{0} mesi", m)); }
+  if (Math.abs(x - 1) <= 0.01) return pre + t("1 anno");
+  return pre + tf("{0} anni", fmt(x, decimali(Math.round(x * 10) / 10)));
+}
+function tipoNome(tipo) { return tipo === "ben" ? t("Beneficio") : tipo === "capex" ? "CAPEX" : "OPEX"; }
+
+/* ============================================================
+   GRAFICI (svg disegnati dalle righe calcolate)
+   ============================================================ */
+/* barra orizzontale con l'estremo dei dati arrotondato e la base squadrata */
+function barraO(x0, x1, y, h) {
+  const r = Math.min(4, Math.abs(x1 - x0), h / 2), d = x1 >= x0 ? 1 : -1;
+  return "M" + x0 + " " + y + "H" + (x1 - d * r) + "Q" + x1 + " " + y + " " + x1 + " " + (y + r) + "V" + (y + h - r) + "Q" + x1 + " " + (y + h) + " " + (x1 - d * r) + " " + (y + h) + "H" + x0 + "Z";
+}
+function barraV(x, w, y0, y1) {
+  const r = Math.min(4, Math.abs(y1 - y0), w / 2), d = y1 <= y0 ? 1 : -1;
+  return "M" + x + " " + y0 + "V" + (y1 + d * r) + "Q" + x + " " + y1 + " " + (x + r) + " " + y1 + "H" + (x + w - r) + "Q" + (x + w) + " " + y1 + " " + (x + w) + " " + (y1 + d * r) + "V" + y0 + "Z";
+}
+function tronca(s, n) { s = String(s); return s.length > n ? s.slice(0, n - 1) + "…" : s; }
+function passo(span, n) {
+  const g = span / n, p = Math.pow(10, Math.floor(Math.log10(g))), f = g / p;
+  return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * p;
+}
+
+/* tornado: tipo "van" oppure "pb" */
+function grafTornado(tipo, W) {
+  const pbMax = nz(S.proj.pbMax), FUORI = NY + 0.5;
+  const v = k => tipo === "van" ? k.van : (k.pb == null ? FUORI : k.pb);
+  const righe = R.tornado.map(x => ({ x: x, u: v(x.u), f: v(x.f) })).sort((a, b) => Math.abs(b.u - b.f) - Math.abs(a.u - a.f));
+  if (!righe.length) return '<p class="empty">' + esc(t("Nessuna variabile: assegna un range ad almeno una voce.")) + "</p>";
+  const b = v(R.base);
+  let lo = b, hi = b;
+  righe.forEach(r => { lo = Math.min(lo, r.u, r.f); hi = Math.max(hi, r.u, r.f); });
+  const conLimite = tipo === "pb" && pbMax > 0;
+  if (conLimite) { lo = Math.min(lo, pbMax); hi = Math.max(hi, pbMax); }
+  const conZero = tipo === "van" && lo <= 0;
+  if (hi - lo < 1e-9) { hi = lo + 1; }
+  W = W || 760;
+  const sx = W < 700 ? 190 : 250, dx = 62, rowH = 46, y0 = 54, bh = 22, nc = W < 700 ? 27 : 36;
+  const x = val => sx + dx + (val - lo) / (hi - lo) * (W - sx - 2 * dx);
+  const H = y0 + righe.length * rowH + 6;
+  const et = n => tipo === "van" ? fmtC(n) : (n >= FUORI ? "> " + NY : fmt(n, 2));
+  const unita = tipo === "van" ? val() : t("anni");
+  let s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(tipo === "van" ? t("VAN ai due estremi di ogni variabile") : t("Payback ai due estremi di ogni variabile")) + '" font-size="12">';
+  righe.forEach((r, i) => {
+    const y = y0 + i * rowH, nome = nomeVar(r.x.v);
+    s += '<text x="0" y="' + (y + 10) + '" fill="var(--ink)" font-weight="600">' + esc(tronca(nome, nc)) + "</text>";
+    s += '<text x="0" y="' + (y + 25) + '" fill="var(--dim)" font-size="11">' + esc(tronca(rangeVar(r.x.v), nc + 6)) + "</text>";
+    [["u", r.u, "var(--c-unfav)", t("estremo sfavorevole")], ["f", r.f, "var(--c-fav)", t("estremo favorevole")]].forEach(e => {
+      if (Math.abs(e[1] - b) < 1e-9) return;
+      const x1 = x(e[1]), tip = nome + "\n" + e[3] + ": " + et(e[1]) + " " + unita;
+      s += '<path class="hit" tabindex="0" d="' + barraO(x(b), x1, y, bh) + '" fill="' + e[2] + '" data-tip="' + esc(tip) + '"/>';
+      const aDestra = e[1] > b;
+      s += '<text x="' + (x1 + (aDestra ? 6 : -6)) + '" y="' + (y + 15) + '" text-anchor="' + (aDestra ? "start" : "end") + '" fill="var(--ink)" class="halo">' + esc(et(e[1])) + "</text>";
+    });
+  });
+  const yFine = y0 + righe.length * rowH - (rowH - bh) + 4;
+  /* riferimenti: caso base, limite di payback, VAN zero */
+  s += '<line x1="' + x(b) + '" x2="' + x(b) + '" y1="24" y2="' + yFine + '" stroke="var(--c-axis)" stroke-width="1.5"/>';
+  const ancora = px => px < sx + 70 ? "start" : px > W - 90 ? "end" : "middle";
+  s += '<text x="' + x(b) + '" y="16" text-anchor="' + ancora(x(b)) + '" fill="var(--ink)" font-weight="600">' + esc(tf("Caso base {0}", et(b) + (tipo === "van" ? "" : " " + unita))) + "</text>";
+  if (conLimite) {
+    s += '<line x1="' + x(pbMax) + '" x2="' + x(pbMax) + '" y1="40" y2="' + yFine + '" stroke="var(--bad-fg)" stroke-width="1.5"/>';
+    s += '<text x="' + x(pbMax) + '" y="34" text-anchor="' + ancora(x(pbMax)) + '" fill="var(--bad-fg)" font-weight="600">' + esc(tf("Limite {0} anni", fmt(pbMax, decimali(pbMax)))) + "</text>";
+  }
+  if (conZero) {
+    s += '<line x1="' + x(0) + '" x2="' + x(0) + '" y1="40" y2="' + yFine + '" stroke="var(--bad-fg)" stroke-width="1.5"/>';
+    s += '<text x="' + x(0) + '" y="34" text-anchor="' + ancora(x(0)) + '" fill="var(--bad-fg)" font-weight="600">' + esc(t("VAN = 0")) + "</text>";
+  }
+  return s + "</svg>";
+}
+function legendaTornado() {
+  return '<div class="legend"><span><i class="swatch" style="background:var(--c-unfav)"></i>' + esc(t("Estremo sfavorevole del range")) + '</span><span><i class="swatch" style="background:var(--c-fav)"></i>' + esc(t("Estremo favorevole del range")) + "</span></div>";
+}
+
+/* flussi di cassa: barre = flusso netto annuo, linea = cumulato attualizzato */
+function grafFlussi(k, W) {
+  W = W || 760;
+  const H = 300, l = 62, r = 16, top = 26, bot = 30;
+  let lo = 0, hi = 0;
+  for (let i = 0; i < NY; i++) { lo = Math.min(lo, k.net[i], k.accDisc[i]); hi = Math.max(hi, k.net[i], k.accDisc[i]); }
+  if (hi - lo < 1e-9) hi = lo + 1;
+  const st = passo(hi - lo, 5);
+  lo = Math.floor(lo / st) * st; hi = Math.ceil(hi / st) * st;
+  const band = (W - l - r) / NY, y = v => top + (hi - v) / (hi - lo) * (H - top - bot), cx = i => l + (i + 0.5) * band;
+  const bw = Math.min(24, band * 0.5);
+  let s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(t("Flusso netto annuo e cumulato attualizzato")) + '" font-size="12">';
+  for (let v = lo; v <= hi + st / 2; v += st) {
+    s += '<line x1="' + l + '" x2="' + (W - r) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + (Math.abs(v) < st / 1e6 ? "var(--c-axis)" : "var(--c-grid)") + '" stroke-width="1"/>';
+    s += '<text x="' + (l - 8) + '" y="' + (y(v) + 4) + '" text-anchor="end" fill="var(--dim)">' + esc(fmtC(Math.abs(v) < st / 1e6 ? 0 : v)) + "</text>";
+  }
+  for (let i = 0; i < NY; i++) {
+    if (k.net[i] !== 0) s += '<path d="' + barraV(cx(i) - bw / 2, bw, y(0), y(k.net[i])) + '" fill="var(--c-bar)"/>';
+    if (band >= 44 || i % 2 === 0) s += '<text x="' + cx(i) + '" y="' + (H - 9) + '" text-anchor="middle" fill="var(--dim)">' + anni(i) + "</text>";
+  }
+  let d = "";
+  for (let i = 0; i < NY; i++) d += (i ? "L" : "M") + cx(i) + " " + y(k.accDisc[i]);
+  s += '<path d="' + d + '" fill="none" stroke="var(--c-line)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>';
+  for (let i = 0; i < NY; i++) s += '<circle cx="' + cx(i) + '" cy="' + y(k.accDisc[i]) + '" r="4" fill="var(--c-line)" stroke="var(--input)" stroke-width="2"/>';
+  if (k.pbDisc != null) {
+    const px = l + (k.pbDisc - 0.5) * band;
+    s += '<line x1="' + px + '" x2="' + px + '" y1="' + (top - 6) + '" y2="' + y(0) + '" stroke="var(--c-axis)" stroke-width="1.5"/>';
+    s += '<text x="' + px + '" y="' + (top - 11) + '" text-anchor="' + (px > W - 150 ? "end" : "middle") + '" fill="var(--ink)" font-weight="600" class="halo">' + esc(tf("Payback attualizzato {0} anni", fmt(k.pbDisc, 2))) + "</text>";
+  }
+  for (let i = 0; i < NY; i++) {
+    const tip = anni(i) + "\n" + t("Flusso netto") + ": " + fmt(k.net[i]) + "\n" + t("Attualizzato") + ": " + fmt(k.disc[i]) + "\n" + t("Cumulato attualizzato") + ": " + fmt(k.accDisc[i]);
+    s += '<rect class="hit" tabindex="0" x="' + (l + i * band) + '" y="' + top + '" width="' + band + '" height="' + (H - top - bot) + '" data-tip="' + esc(tip) + '"/>';
+  }
+  return s + "</svg>";
+}
+function legendaFlussi() {
+  return '<div class="legend"><span><i class="swatch" style="background:var(--c-bar)"></i>' + esc(t("Flusso netto annuo")) + '</span><span><i class="swatch line" style="background:var(--c-line)"></i>' + esc(t("Cumulato attualizzato")) + "</span></div>";
+}
+
+/* i grafici si disegnano dopo, alla larghezza reale del riquadro: così il testo non viene ingrandito né rimpicciolito */
+function segnaposto(tipo, lingua) { return '<div class="chart" data-g="' + tipo + '"' + (lingua ? ' data-l="' + lingua + '"' : "") + "></div>"; }
+function disegnaGrafici(larghezzaFissa) {
+  document.querySelectorAll(".chart[data-g]").forEach(el => {
+    const cs = getComputedStyle(el);
+    let W = larghezzaFissa && el.closest(".sheet") ? larghezzaFissa : Math.floor(el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
+    W = Math.max(560, Math.min(1400, W || 760));
+    const prima = TL; TL = el.dataset.l || LANG;
+    try { el.innerHTML = el.dataset.g === "flussi" ? grafFlussi(R.base, W) : grafTornado(el.dataset.g, W); } finally { TL = prima; }
+  });
+}
+
+/* ============================================================
+   SCHEDE
+   ============================================================ */
+const TABS = [["progetto", "Progetto"], ["voci", "Benefici e costi"], ["responso", "Responso"], ["sens", "Sensitivity"], ["controlli", "Controlli"], ["versioni", "Versioni"], ["report", "Report"], ["dati", "Dati e guida"]];
+
+function renderTesta() {
+  document.documentElement.lang = LANG;
+  document.getElementById("tagline").textContent = t("Costi, benefici e rischio: dal business case al responso.");
+  document.getElementById("lblNome").textContent = t("Progetto");
+  const nome = document.getElementById("projNome");
+  nome.placeholder = t("Nome del progetto");
+  if (document.activeElement !== nome) nome.value = S.proj.nome || "";
+  document.getElementById("themeBtn").textContent = temaScuro() ? t("Tema chiaro") : t("Tema scuro");
+  document.querySelectorAll("#langSeg button").forEach(b => b.setAttribute("aria-pressed", b.dataset.arg === LANG ? "true" : "false"));
+  const nErr = CK.filter(c => c.sev === "err").length, nWarn = CK.filter(c => c.sev === "warn").length;
+  document.getElementById("nav").innerHTML = TABS.map(x => {
+    let badge = "";
+    if (x[0] === "controlli" && nErr + nWarn > 0) badge = '<span class="badge' + (nErr ? "" : " soft") + '">' + (nErr + nWarn) + "</span>";
+    return '<button data-a="tab" data-arg="' + x[0] + '"' + (UI.tab === x[0] ? ' aria-current="true"' : "") + ">" + esc(t(x[1])) + badge + "</button>";
+  }).join("");
+  document.getElementById("verNum").textContent = VERSION;
+}
+
+function bannerEsempio() {
+  if (!S.esempio) return "";
+  return '<div class="banner noprint"><span><b>' + esc(t("Progetto di esempio.")) + "</b> " + esc(t("I numeri sono inventati e servono solo a mostrare come funziona l'app.")) +
+    '</span><span class="sp"><button class="act small" data-a="nuovo">' + esc(t("Nuovo progetto")) + '</button><button class="act ghost small" data-a="importa">' + esc(t("Importa file")) + "</button></span></div>";
+}
+
+/* ---------- progetto ---------- */
+function renderProgetto() {
+  const P = S.proj;
+  let h = bannerEsempio();
+  h += '<div class="panel"><h2>' + esc(t("Dati del progetto")) + '</h2><div class="fields">' +
+    campo(t("Nome del progetto"), "p-nome", txtIn("p-nome", "proj.nome", P.nome), "span2") +
+    campo(t("Project manager"), "p-pm", txtIn("p-pm", "proj.pm", P.pm)) +
+    campo(t("Sito o unità"), "p-sito", txtIn("p-sito", "proj.sito", P.sito)) +
+    campo(t("Benefit owner"), "p-owner", txtIn("p-owner", "proj.owner", P.owner)) +
+    campo(t("Data di inizio"), "p-di", '<input type="date" id="p-di" data-p="proj.dataInizio" data-t="s" value="' + esc(P.dataInizio) + '">') +
+    campo(t("Data di fine"), "p-df", '<input type="date" id="p-df" data-p="proj.dataFine" data-t="s" value="' + esc(P.dataFine) + '">') +
+    "</div></div>";
+  const esA = fmt(250000 / (P.scala || 1), decimali(250000 / (P.scala || 1)));
+  h += '<div class="panel"><h2>' + esc(t("Valuta e unità degli importi")) + '</h2><p class="hint">' + esc(tf("Tutti gli importi dell'app sono in {0}. Se cambi valuta o unità a caso già compilato, l'app ti chiede se convertire i numeri o cambiare solo l'etichetta.", val() || "–")) + '</p><div class="fields">' +
+    campo(t("Valuta"), "p-val", '<input id="p-val" list="valute" data-c="valuta" autocomplete="off" value="' + esc(P.valuta) + '"><datalist id="valute">' + ["EUR", "USD", "GBP", "CHF", "SEK", "DKK", "NOK", "PLN", "CNY", "INR", "JPY", "BRL"].map(c => '<option value="' + c + '">').join("") + "</datalist>", "", t("Sigla libera, per esempio EUR, USD, SEK.")) +
+    campo(t("Unità degli importi"), "p-scala", '<select id="p-scala" data-c="scala">' + [[1, t("Unità")], [1000, t("Migliaia (k)")], [1000000, t("Milioni (M)")]].map(o => '<option value="' + o[0] + '"' + (o[0] === (P.scala || 1) ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select>", "", tf("Esempio: duecentocinquantamila si scrive {0}.", esA)) +
+    "</div></div>";
+  h += '<div class="panel"><h2>' + esc(t("Criteri di approvazione")) + '</h2><p class="hint">' +
+    esc(t("Il responso confronta il progetto con questi valori. Il primo anno non viene scontato, come nel template CBA.")) + '</p><div class="fields">' +
+    campo(t("Primo anno"), "p-a0", '<input class="num" id="p-a0" inputmode="numeric" data-p="proj.anno0" data-t="i" value="' + esc(Math.round(nz(P.anno0))) + '">') +
+    campo(t("Anni di simulazione"), "p-anni", '<input class="num" id="p-anni" inputmode="numeric" data-c="anni" value="' + NY + '">', "", tf("Da {0} a {1}. Il template ne usa 10. Ultimo anno: {2}.", NY_MIN, NY_MAX, anni(NY - 1))) +
+    campo(t("Tasso di sconto %"), "p-tasso", numIn("p-tasso", "proj.tasso", P.tasso)) +
+    campo(t("Payback massimo (anni)"), "p-pb", numIn("p-pb", "proj.pbMax", P.pbMax, "", true), "", t("Vuoto = nessun limite.")) +
+    campo(t("Payback usato come criterio"), "p-crit", selIn("p-crit", "proj.criterio", P.criterio, [["disc", t("Attualizzato")], ["simple", t("Semplice")]])) +
+    "</div></div>";
+  const ta = (label, id, path, v, sub) => '<div class="field full"><label for="' + id + '">' + esc(label) + '</label><textarea id="' + id + '" data-p="' + path + '" data-t="s">' + esc(v) + "</textarea>" + (sub ? '<span class="sub">' + esc(sub) + "</span>" : "") + "</div>";
+  h += '<div class="panel"><h2>' + esc(t("Descrizione del caso")) + '</h2><p class="hint">' + esc(t("Questi testi finiscono nel report. Spiegare il caso conta quanto i numeri.")) + '</p><div class="fields">' +
+    ta(t("Contesto"), "p-bg", "proj.background", P.background) +
+    ta(t("Benefici principali e risultati attesi"), "p-ben", "proj.benefici", P.benefici) +
+    ta(t("Benefici non misurabili (fuori dal calcolo)"), "p-nm", "proj.nonMisurabili", P.nonMisurabili) +
+    ta(t("Rischi, effetti collaterali e alternative considerate"), "p-ris", "proj.rischi", P.rischi) +
+    ta(t("Ipotesi di calcolo"), "p-ip", "proj.ipotesi", P.ipotesi, t("Baseline, volumi, tariffe: tutto ciò che serve a rifare il conto.")) +
+    "</div></div>";
+  return h;
+}
+
+/* ---------- benefici e costi ---------- */
+function kpiStriscia() {
+  const k = R.base, P = S.proj;
+  const crit = P.criterio === "simple" ? t("Payback semplice") : t("Payback attualizzato");
+  return '<div class="kpis">' +
+    '<div class="kpi"><div class="n">' + fmt(k.van) + " <small>" + esc(val()) + '</small></div><div class="l">' + esc(tf("VAN al {0}", fmtPct(nz(P.tasso), decimali(nz(P.tasso))))) + "</div></div>" +
+    '<div class="kpi"><div class="n">' + fmtPb(k.pb) + (k.pb != null ? " <small>" + esc(t("anni")) + "</small>" : "") + '</div><div class="l">' + esc(crit) + "</div></div>" +
+    '<div class="kpi"><div class="n">' + fmt(somma(k.ben)) + '</div><div class="l">' + esc(tf("Benefici in {0} anni", NY)) + "</div></div>" +
+    '<div class="kpi"><div class="n">' + fmt(somma(k.out)) + '</div><div class="l">' + esc(t("Cash out totale")) + "</div></div></div>";
+}
+const MODI = () => [["man", t("Importi per anno")], ["driver", t("Quantità × valore")]];
+function rangeTesto(v) {
+  const sf = nz(v.sfav), fv = nz(v.fav);
+  if (!sf && !fv) return '<span class="tag t-idle">' + esc(t("nessuno")) + "</span>";
+  return '<span class="tag t-info">' + sgn(sf, decimali(sf)) + "% / " + sgn(fv, decimali(fv)) + "%</span>";
+}
+function rigaVoce(v) {
+  const a = R.base.voci[v.id], open = !!UI.open[v.id], id = v.id;
+  const arr = v.modo === "driver" ? "qta" : v.modo === "ins" ? "ins.rampa" : "val";
+  const src = v.modo === "driver" ? v.qta : v.modo === "ins" ? v.ins.rampa : v.val;
+  let unit = '<span class="sub" style="color:var(--dim)">–</span>';
+  if (v.modo === "driver") unit = numIn("v-" + id + "-u", "voci." + id + ".unitVal", v.unitVal, "short") + '<span class="calc" style="display:block;font-size:11.5px;color:var(--dim);padding-top:2px">' + esc(val() + " / " + (v.unita || t("unità"))) + "</span>";
+  if (v.modo === "ins") unit = '<span style="display:inline-block;max-width:78px;white-space:normal;line-height:1.25;font-size:12.5px;color:var(--dim)">' + esc(t("% del regime")) + "</span>";
+  let h = '<tr class="' + (open ? "open" : "") + '"><td>' + txtIn("v-" + id + "-n", "voci." + id + ".nome", v.nome, "nome", v.tipo === "ben" ? t("Nome del beneficio") : t("Nome del costo")) +
+    '<div class="rowtools">' + rangeTesto(v) + '<button class="link" data-a="tog" data-arg="' + id + '" aria-expanded="' + open + '">' + esc(open ? t("Chiudi") : t("Dettagli")) + '</button><button class="link del" data-a="del" data-arg="' + id + '">' + esc(t("Elimina")) + "</button></div></td>";
+  h += '<td class="num">' + unit + "</td>";
+  for (let j = 0; j < NY; j++) {
+    h += '<td class="yr">' + numIn("v-" + id + "-y" + j, "voci." + id + "." + arr + "." + j, src[j], "", true) + (v.modo !== "man" ? '<span class="calc">' + (a[j] ? fmt(a[j]) : "&nbsp;") + "</span>" : "") + "</td>";
+  }
+  h += '<td class="num"><b>' + fmt(somma(a)) + "</b></td></tr>";
+  if (open) h += '<tr class="det"><td colspan="' + (NY + 3) + '">' + dettaglioVoce(v) + "</td></tr>";
+  return h;
+}
+function dettaglioVoce(v) {
+  const id = v.id, b = "voci." + id + ".", a = R.base.voci[id];
+  const lato = v.tipo === "ben" ? R.pvBen : R.pvCosti, peso = lato > 0 ? R.pv[id] / lato * 100 : 0;
+  const modi = MODI(); if (v.tipo === "ben") modi.push(["ins", t("Insourcing: spesa evitata meno costo interno")]);
+  let h = '<div class="detbox">';
+  h += "<div><h3>" + esc(t("Come la inserisci")) + '</h3><div class="fields">' + campo(t("Metodo"), "v-" + id + "-m", selIn("v-" + id + "-m", b + "modo", v.modo, modi), "span2") +
+    (v.modo === "driver" ? campo(t("Unità di misura della quantità"), "v-" + id + "-um", txtIn("v-" + id + "-um", b + "unita", v.unita, "", "h, pz, kg…")) : "") + "</div></div>";
+  if (v.modo === "ins") {
+    const I = v.ins, n = insNetto(v);
+    h += "<div><h3>" + esc(t("Calcolo dell'insourcing")) + '</h3><p class="hint">' + esc(t("Il beneficio è la spesa che smetti di pagare al fornitore meno quello che spendi per produrre in casa lo stesso volume. Negli anni della tabella inserisci la percentuale di regime raggiunta.")) + '</p><div class="fields">' +
+      campo(t("Spesa annua attuale verso il fornitore"), "v-" + id + "-is", numIn("v-" + id + "-is", b + "ins.spesa", I.spesa)) +
+      campo(t("Quota internalizzata %"), "v-" + id + "-iq", numIn("v-" + id + "-iq", b + "ins.quota", I.quota)) +
+      campo(t("Materiali interni per anno"), "v-" + id + "-im", numIn("v-" + id + "-im", b + "ins.materiali", I.materiali)) +
+      campo(t("Ore interne per anno"), "v-" + id + "-io", numIn("v-" + id + "-io", b + "ins.ore", I.ore)) +
+      campo(t("Tariffa oraria"), "v-" + id + "-it", numIn("v-" + id + "-it", b + "ins.tariffa", I.tariffa)) +
+      campo(t("Altri costi interni per anno"), "v-" + id + "-ia", numIn("v-" + id + "-ia", b + "ins.altro", I.altro)) +
+      '</div><div class="formula" style="margin-top:12px">' + esc(t("Spesa evitata")) + " <b>" + fmt(n.evitata) + "</b> − " + esc(t("costo interno")) + " <b>" + fmt(n.interno) + "</b> = " + esc(t("beneficio a regime")) + " <b>" + fmt(n.netto) + "</b> " + esc(val()) + " / " + esc(t("anno")) + "</div></div>";
+  }
+  h += "<div><h3>" + esc(t("Origine del dato")) + '</h3><div class="fields">';
+  if (v.tipo !== "ben") h += campo(t("Categoria del template"), "v-" + id + "-c", selIn("v-" + id + "-c", b + "cat", v.cat, (v.tipo === "capex" ? CAT_CAPEX : CAT_OPEX).map(c => [c, t(c)])));
+  h += campo(t("Fonte del dato"), "v-" + id + "-f", txtIn("v-" + id + "-f", b + "fonte", v.fonte, "", t("Preventivo, misura, calcolo, ipotesi…")), "span2") +
+    campo(t("Certezza del dato"), "v-" + id + "-ce", selIn("v-" + id + "-ce", b + "certezza", v.certezza, [["preventivo", t("Preventivo o contratto")], ["misurato", t("Misurato sul campo")], ["stima", t("Stima")], ["ipotesi", t("Ipotesi")]])) +
+    campo(t("Note"), "v-" + id + "-no", txtIn("v-" + id + "-no", b + "note", v.note), "span2") + "</div></div>";
+  const sg = CERTEZZE[v.certezza] || CERTEZZE.stima, su = v.tipo === "ben" ? -sg[0] : sg[0], sf = v.tipo === "ben" ? sg[1] : -sg[1];
+  h += "<div><h3>" + esc(t("Range di rischio")) + '</h3><p class="hint">' + esc(v.tipo === "ben" ?
+    t("Di quanto può sbagliare questa voce, in percentuale dell'importo. Per un beneficio l'estremo sfavorevole è negativo. Le voci con lo stesso gruppo si muovono insieme, come un'unica variabile.") :
+    t("Di quanto può sbagliare questa voce, in percentuale dell'importo. Per un costo l'estremo sfavorevole è positivo. Le voci con lo stesso gruppo si muovono insieme, come un'unica variabile.")) + '</p><div class="fields">' +
+    campo(t("Sfavorevole %"), "v-" + id + "-sf", numIn("v-" + id + "-sf", b + "sfav", v.sfav)) +
+    campo(t("Favorevole %"), "v-" + id + "-fv", numIn("v-" + id + "-fv", b + "fav", v.fav)) +
+    campo(t("Gruppo di sensitivity"), "v-" + id + "-g", '<input id="v-' + id + '-g" list="gruppi" data-p="' + b + 'gruppo" data-t="s" value="' + esc(v.gruppo) + '" placeholder="' + esc(t("facoltativo")) + '">') +
+    '<div class="field"><span class="lab">&nbsp;</span><button class="act ghost" data-a="sugg" data-arg="' + id + '">' + esc(tf("Usa il range suggerito: {0}% / {1}%", sgn(su), sgn(sf))) + "</button></div></div></div>";
+  const F = UI.fill[id] || (UI.fill[id] = { v: 0, da: 0, a: NY - 1 });
+  if (nz(F.da) > NY - 1) F.da = NY - 1;
+  if (nz(F.a) > NY - 1) F.a = NY - 1;
+  const anniOpt = []; for (let j = 0; j < NY; j++) anniOpt.push([String(j), String(anni(j))]);
+  h += "<div><h3>" + esc(t("Riempimento rapido")) + '</h3><div class="fields">' +
+    campo(v.modo === "driver" ? t("Quantità per anno") : v.modo === "ins" ? t("% del regime") : t("Importo per anno"), "v-" + id + "-qv", numIn("v-" + id + "-qv", "ui.fill." + id + ".v", F.v)) +
+    campo(t("Dal"), "v-" + id + "-qd", selIn("v-" + id + "-qd", "ui.fill." + id + ".da", String(F.da), anniOpt)) +
+    campo(t("Al"), "v-" + id + "-qa", selIn("v-" + id + "-qa", "ui.fill." + id + ".a", String(F.a), anniOpt)) +
+    '<div class="field"><span class="lab">&nbsp;</span><button class="act ghost" data-a="fill" data-arg="' + id + '">' + esc(t("Applica agli anni scelti")) + "</button></div></div></div>";
+  h += '<div class="formula">' + esc(tf("Totale {0} anni", NY)) + " <b>" + fmt(somma(a)) + "</b> · " + esc(t("valore attuale")) + " <b>" + fmt(R.pv[id]) + "</b> · " + esc(v.tipo === "ben" ? t("peso sui benefici") : t("peso sui costi")) + " <b>" + fmtPct(peso) + "</b></div>";
+  h += '<div class="row-actions" style="margin-top:0"><button class="act ghost small" data-a="dup" data-arg="' + id + '">' + esc(t("Duplica la voce")) + "</button></div></div>";
+  return h;
+}
+function tabellaVoci(tipo, titolo, aiuto, btn, totale) {
+  const lista = S.voci.filter(v => v.tipo === tipo);
+  const tot = tipo === "ben" ? R.base.ben : tipo === "capex" ? R.base.capex : R.base.opex;
+  let h = '<div class="panel"><h2>' + esc(titolo) + '</h2><p class="hint">' + esc(aiuto) + "</p>";
+  if (lista.length) {
+    h += '<div class="scroller"><table class="matrix"><thead><tr><th>' + esc(t("Voce")) + '</th><th class="num wrap">' + esc(t("Valore unitario")) + "</th>";
+    for (let j = 0; j < NY; j++) h += '<th class="yr">' + anni(j) + "</th>";
+    h += '<th class="num">' + esc(t("Totale")) + "</th></tr></thead><tbody>";
+    lista.forEach(v => { h += rigaVoce(v); });
+    h += "</tbody><tfoot><tr><td>" + esc(totale) + "</td><td></td>";
+    for (let j = 0; j < NY; j++) h += '<td class="num">' + (tot[j] ? fmt(tot[j]) : "") + "</td>";
+    h += '<td class="num">' + fmt(somma(tot)) + "</td></tr></tfoot></table></div>";
+  } else h += '<p class="empty">' + esc(t("Ancora nessuna voce.")) + "</p>";
+  h += '<div class="row-actions"><button class="act" data-a="add" data-arg="' + tipo + '">' + esc(btn) + "</button></div></div>";
+  return h;
+}
+function renderVoci() {
+  const gruppi = {}; S.voci.forEach(v => { const g = (v.gruppo || "").trim(); if (g) gruppi[g] = 1; });
+  return bannerEsempio() + kpiStriscia() +
+    '<datalist id="gruppi">' + Object.keys(gruppi).map(g => '<option value="' + esc(g) + '">').join("") + "</datalist>" +
+    tabellaVoci("ben", t("Benefici"), t("Solo effetti reali sul flusso di cassa: risparmi, costi evitati, margine aggiuntivo. Scrivi importi positivi. Nei dettagli scegli come inserire la voce: nelle righe a quantità scrivi le quantità anno per anno e sotto ogni casella compare l'importo calcolato."), t("Aggiungi un beneficio"), t("Totale benefici")) +
+    tabellaVoci("capex", t("CAPEX"), t("Investimenti. Scrivi importi positivi: l'app li tratta come uscite. La categoria del template e il range di rischio si scelgono nei dettagli."), t("Aggiungi un investimento"), t("Totale CAPEX")) +
+    tabellaVoci("opex", t("OPEX"), t("Costi di progetto e costi ricorrenti che nascono dal progetto. Scrivi importi positivi."), t("Aggiungi un costo"), t("Totale OPEX"));
+}
+
+/* ---------- responso ---------- */
+function testoVerdetto() {
+  const k = R.base, P = S.proj, pbMax = nz(P.pbMax);
+  if (somma(k.ben) === 0 || somma(k.out) === 0) return { stato: "warn", k: t("Responso"), v: t("Inserisci benefici e costi per avere il responso."), p: "" };
+  const tasso = fmtPct(nz(P.tasso), decimali(nz(P.tasso)));
+  let base = tf("VAN {0} {1} al {2}.", fmt(k.van), val(), tasso) + " ";
+  if (k.pb == null) base += tf("L'investimento non rientra nei {0} anni.", NY);
+  else if (pbMax > 0) base += k.pb <= pbMax ? tf("Payback {0} anni: {1} sotto il limite di {2}.", fmt(k.pb, 2), durata(pbMax - k.pb), fmt(pbMax, decimali(pbMax))) : tf("Payback {0} anni: oltre il limite di {1}.", fmt(k.pb, 2), fmt(pbMax, decimali(pbMax)));
+  else base += tf("Payback {0} anni.", fmt(k.pb, 2));
+  if (R.stato === "bad") return { stato: "bad", k: t("Responso"), v: t("Non rispetta i criteri di approvazione."), p: base };
+  if (R.stato === "warn") {
+    const nomi = R.deboli.map(x => nomeVar(x.v) + " (" + rangeVar(x.v).split(" / ")[0] + ")").join(", ");
+    return { stato: "warn", k: t("Responso"), v: t("Rispetta i criteri, ma con margine ridotto."), p: base + " " + tf("Non regge a: {0}.", nomi) };
+  }
+  return { stato: "ok", k: t("Responso"), v: R.vars.length ? t("Rispetta i criteri e regge a ogni rischio testato.") : t("Rispetta i criteri. Nessun rischio ancora testato."), p: base };
+}
+function tabellaFlussi(k) {
+  const riga = (nome, a, segno, cls) => {
+    let h = '<tr class="' + (cls || "") + '"><td>' + esc(nome) + "</td>";
+    for (let j = 0; j < NY; j++) { const x = segno * a[j]; h += '<td class="num' + (x < 0 ? " neg" : "") + '">' + (x ? fmt(x) : "") + "</td>"; }
+    return h;
+  };
+  const tot = (a, segno) => { const x = segno * somma(a); return '<td class="num' + (x < 0 ? " neg" : "") + '">' + fmt(x) + "</td></tr>"; };
+  let h = '<div class="scroller"><table class="matrix"><thead><tr><th></th>';
+  for (let j = 0; j < NY; j++) h += '<th class="num">' + anni(j) + "</th>";
+  h += '<th class="num">' + esc(t("Totale")) + "</th></tr></thead><tbody>";
+  h += riga(t("Totale benefici"), k.ben, 1) + tot(k.ben, 1);
+  h += riga(t("Totale CAPEX"), k.capex, -1) + tot(k.capex, -1);
+  h += riga(t("Totale OPEX"), k.opex, -1) + tot(k.opex, -1);
+  h += riga(t("Totale cash out"), k.out, -1, "strong") + tot(k.out, -1);
+  h += riga(t("Flusso netto"), k.net, 1, "strong sep") + tot(k.net, 1);
+  h += riga(t("Flusso cumulato"), k.acc, 1) + '<td class="num"></td></tr>';
+  h += riga(t("Flusso attualizzato"), k.disc, 1, "strong sep") + tot(k.disc, 1);
+  h += riga(t("Cumulato attualizzato"), k.accDisc, 1) + '<td class="num"></td></tr>';
+  return h + "</tbody></table></div>";
+}
+function tabellaPesi() {
+  let h = '<div class="scroller"><table><thead><tr><th>' + esc(t("Voce")) + "</th><th>" + esc(t("Tipo")) + '</th><th class="num">' + esc(tf("Totale {0} anni", NY)) + '</th><th class="num">' + esc(t("Valore attuale")) + '</th><th class="num">' + esc(t("Peso sul suo lato")) + "</th><th>" + esc(t("Range")) + "</th></tr></thead><tbody>";
+  S.voci.slice().sort((a, b) => (a.tipo === "ben" ? 0 : 1) - (b.tipo === "ben" ? 0 : 1) || R.pv[b.id] - R.pv[a.id]).forEach(v => {
+    const lato = v.tipo === "ben" ? R.pvBen : R.pvCosti, s = v.tipo === "ben" ? 1 : -1;
+    h += "<tr><td>" + esc(v.nome || t("(senza nome)")) + "</td><td>" + esc(tipoNome(v.tipo)) + '</td><td class="num">' + fmt(s * somma(R.base.voci[v.id])) + '</td><td class="num">' + fmt(s * R.pv[v.id]) + '</td><td class="num">' + (lato > 0 ? fmtPct(R.pv[v.id] / lato * 100) : "–") + "</td><td>" + rangeTesto(v) + "</td></tr>";
+  });
+  return h + "</tbody></table></div>";
+}
+function renderResponso() {
+  const k = R.base, P = S.proj, vd = testoVerdetto();
+  let h = bannerEsempio();
+  h += '<div class="verdict ' + vd.stato + '"><div class="k">' + esc(vd.k) + '</div><div class="v">' + esc(vd.v) + "</div>" + (vd.p ? "<p>" + esc(vd.p) + "</p>" : "") + "</div>";
+  const critDisc = P.criterio !== "simple";
+  const kp = (n, u, l, crit) => '<div class="kpi"><div class="n">' + n + (u ? " <small>" + esc(u) + "</small>" : "") + '</div><div class="l">' + esc(l) + "</div>" + (crit ? '<div class="s">' + tag("t-info", t("criterio di approvazione")) + "</div>" : "") + "</div>";
+  h += '<div class="kpis">' +
+    kp(fmt(k.van), val(), tf("VAN al {0}", fmtPct(nz(P.tasso), decimali(nz(P.tasso))))) +
+    kp(fmtPb(k.pbDisc), k.pbDisc != null ? t("anni") : "", t("Payback attualizzato"), critDisc && nz(P.pbMax) > 0) +
+    kp(fmtPb(k.pbSimple), k.pbSimple != null ? t("anni") : "", t("Payback semplice"), !critDisc && nz(P.pbMax) > 0) +
+    kp(k.tir == null ? "–" : fmtPct(k.tir * 100), "", t("TIR, il rendimento del progetto")) +
+    kp(fmt(somma(k.ben)), "", tf("Benefici in {0} anni", NY)) +
+    kp(fmt(somma(k.out)), "", t("Cash out totale")) + "</div>";
+  h += '<div class="panel"><h2>' + esc(t("Flussi di cassa")) + '</h2><p class="hint">' + esc(t("Il payback si conta dall'inizio del primo anno: è il punto in cui il cumulato torna a zero.")) + "</p>" + legendaFlussi() + segnaposto("flussi") +
+    '<div style="margin-top:16px">' + tabellaFlussi(k) + "</div></div>";
+  h += '<div class="panel"><h2>' + esc(t("Cosa regge il risultato")) + '</h2><p class="hint">' + esc(t("Il peso è calcolato sul valore attuale. Le voci in cima sono quelle da validare meglio.")) + "</p>" + (S.voci.length ? tabellaPesi() : '<p class="empty">' + esc(t("Ancora nessuna voce.")) + "</p>") + "</div>";
+  return h;
+}
+
+/* ---------- sensitivity ---------- */
+function cellaSoglia(vr, s, quale, hi) {
+  if (!s) return "–";
+  const pbMax = nz(S.proj.pbMax);
+  if (s.stato === "base") return "–";
+  if (s.stato === "mai") {
+    const resto = quale === "van" ? tf("il VAN resta {0}", fmtC(s.limite.van)) : tf("il payback resta {0}", fmtPb(s.limite.pb));
+    if (vr.tipo === "voci") return vr.parti.some(p => p.sfav < 0) ? tf("Mai: anche azzerando la voce {0}", resto) : tf("Mai entro {0}%", sgn(hi * Math.max.apply(null, vr.parti.map(p => p.sfav))));
+    if (vr.tipo === "ritardo") return tf("Mai entro {0} anni", NY);
+    if (vr.tipo === "tasso") return tf("Mai entro il {0}%", fmt(hi, 0));
+    return tf("Mai: anche a zero {0}", resto);
+  }
+  if (vr.tipo === "voci") return sgn(s.delta, 0) + "% (" + tf("{0} in totale", fmt(s.totale)) + ")";
+  if (vr.tipo === "ritardo") return "≈ " + durata(s.x);
+  if (vr.tipo === "tasso") return fmtPct(s.x) + (quale === "van" ? " " + t("(è il TIR)") : "");
+  return "−" + fmt(s.x * 100, 0) + "%";
+}
+function tabellaTornado() {
+  let h = '<div class="scroller"><table><thead><tr><th>' + esc(t("Variabile")) + "</th><th>" + esc(t("Range testato")) + '</th><th class="num">' + esc(t("VAN sfavorevole")) + '</th><th class="num">' + esc(t("VAN favorevole")) + '</th><th class="num">' + esc(t("Oscillazione")) + '</th><th class="num">' + esc(t("Payback sfavorevole")) + '</th><th class="num">' + esc(t("Payback favorevole")) + "</th><th>" + esc(t("Esito")) + "</th></tr></thead><tbody>";
+  R.tornado.slice().sort((a, b) => Math.abs(b.u.van - b.f.van) - Math.abs(a.u.van - a.f.van)).forEach(x => {
+    h += "<tr><td>" + esc(nomeVar(x.v)) + "</td><td>" + esc(rangeVar(x.v)) + '</td><td class="num">' + fmt(x.u.van) + '</td><td class="num">' + fmt(x.f.van) + '</td><td class="num">' + fmt(Math.abs(x.u.van - x.f.van)) + '</td><td class="num">' + fmtPb(x.u.pb) + '</td><td class="num">' + fmtPb(x.f.pb) + "</td><td>" + (x.regge ? tag("t-ok", t("regge")) : tag("t-bad", t("non regge"))) + "</td></tr>";
+  });
+  return h + "</tbody></table></div>";
+}
+function tabellaSoglie() {
+  const pbMax = nz(S.proj.pbMax);
+  let h = '<div class="scroller"><table><thead><tr><th>' + esc(t("Variabile")) + "</th><th>" + esc(t("Estremo sfavorevole testato")) + "</th><th>" + esc(t("Il VAN va a zero a")) + "</th>" + (pbMax > 0 ? "<th>" + esc(tf("Il payback arriva a {0} anni a", fmt(pbMax, decimali(pbMax)))) + "</th>" : "") + "</tr></thead><tbody>";
+  R.tornado.forEach(x => {
+    if (!x.soglie) return;
+    h += "<tr><td>" + esc(nomeVar(x.v)) + "</td><td>" + esc(rangeVar(x.v).split(" / ")[0]) + " " + (x.regge ? tag("t-ok", t("regge")) : tag("t-bad", t("non regge"))) + "</td><td>" + esc(cellaSoglia(x.v, x.soglie.van, "van", x.soglie.hi)) + "</td>" + (pbMax > 0 ? "<td>" + esc(cellaSoglia(x.v, x.soglie.pb, "pb", x.soglie.hi)) + "</td>" : "") + "</tr>";
+  });
+  if (R.benefici) {
+    const vr = { tipo: "benefici" };
+    h += '<tr class="sep"><td>' + esc(nomeVar(vr)) + "</td><td>–</td><td>" + esc(cellaSoglia(vr, R.benefici.van, "van", 1)) + "</td>" + (pbMax > 0 ? "<td>" + esc(cellaSoglia(vr, R.benefici.pb, "pb", 1)) + "</td>" : "") + "</tr>";
+  }
+  return h + "</tbody></table></div>";
+}
+const LIV = () => [["u", t("Sfavorevole")], ["b", t("Base")], ["f", t("Favorevole")]];
+function tabellaScenari(sola) {
+  let h = '<div class="scroller"><table><thead><tr><th>' + esc(t("Scenario")) + "</th>";
+  R.vars.forEach(vr => { h += "<th>" + esc(tronca(nomeVar(vr), 26)) + "</th>"; });
+  h += '<th class="num">' + esc(t("VAN")) + '</th><th class="num">' + esc(t("Payback")) + "</th><th>" + esc(t("Esito")) + "</th>" + (sola ? "" : "<th></th>") + "</tr></thead><tbody>";
+  const nomi = { u: t("Sfavorevole"), b: t("Base"), f: t("Favorevole") };
+  R.scen.forEach(sc => {
+    h += "<tr><td>" + (sc.fisso || sola ? "<b>" + esc(sc.fisso ? t(sc.nome) : sc.nome) + "</b>" : '<input id="sc-' + sc.id + '-n" data-c="scenNome" data-sid="' + sc.id + '" value="' + esc(sc.nome) + '">') + "</td>";
+    R.vars.forEach((vr, j) => {
+      const lv = sc.livelli[vr.id] || "b";
+      if (sc.fisso || sola) h += "<td>" + esc(nomi[lv]) + "</td>";
+      else h += '<td><select id="sc-' + sc.id + "-" + j + '" data-c="scenLiv" data-sid="' + sc.id + '" data-vid="' + esc(vr.id) + '">' + LIV().map(o => '<option value="' + o[0] + '"' + (o[0] === lv ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select></td>";
+    });
+    h += '<td class="num">' + fmt(sc.k.van) + '</td><td class="num">' + fmtPb(sc.k.pb) + "</td><td>" + (sc.esito.ok ? tag("t-ok", t("rispetta i criteri")) : tag("t-bad", t("non li rispetta"))) + "</td>";
+    if (!sola) h += '<td class="tools">' + (sc.fisso ? "" : '<button class="danger" data-a="scenDel" data-arg="' + sc.id + '" aria-label="' + esc(t("Elimina lo scenario")) + '">✕</button>') + "</td>";
+    h += "</tr>";
+  });
+  return h + "</tbody></table></div>";
+}
+function tabellaScenariReport() {
+  const nomi = { u: t("sfavorevole"), f: t("favorevole") };
+  let h = "<table><thead><tr><th>" + esc(t("Scenario")) + "</th><th>" + esc(t("Composizione")) + '</th><th class="num">' + esc(t("VAN")) + '</th><th class="num">' + esc(t("Payback")) + "</th><th>" + esc(t("Esito")) + "</th></tr></thead><tbody>";
+  R.scen.forEach(sc => {
+    let comp;
+    if (sc.id === "pess") comp = t("Tutte le variabili all'estremo sfavorevole");
+    else if (sc.id === "ott") comp = t("Tutte le variabili all'estremo favorevole");
+    else {
+      const parti = R.vars.filter(vr => (sc.livelli[vr.id] || "b") !== "b").map(vr => nomeVar(vr) + ": " + nomi[sc.livelli[vr.id]]);
+      comp = parti.length ? parti.join("; ") : t("Tutte le variabili al valore base");
+    }
+    h += "<tr><td><b>" + esc(sc.fisso ? t(sc.nome) : sc.nome) + "</b></td><td>" + esc(comp) + '</td><td class="num">' + fmt(sc.k.van) + '</td><td class="num">' + fmtPb(sc.k.pb) + "</td><td>" + (sc.esito.ok ? tag("t-ok", t("rispetta i criteri")) : tag("t-bad", t("non li rispetta"))) + "</td></tr>";
+  });
+  return h + "</tbody></table>";
+}
+function renderSens() {
+  const SE = S.sens;
+  let h = bannerEsempio();
+  h += '<div class="panel"><h2>' + esc(t("Range delle voci")) + '</h2><p class="hint">' + esc(t("Per ogni voce incerta indica di quanto può sbagliare. Una voce senza range resta ferma al valore base. Dai a più voci lo stesso gruppo per muoverle insieme, per esempio tutto il CAPEX.")) + "</p>";
+  if (S.voci.length) {
+    h += '<div class="scroller"><table><thead><tr><th>' + esc(t("Voce")) + "</th><th>" + esc(t("Tipo")) + '</th><th class="num">' + esc(t("Valore attuale")) + '</th><th class="num">' + esc(t("Sfavorevole %")) + '</th><th class="num">' + esc(t("Favorevole %")) + "</th><th>" + esc(t("Gruppo")) + "</th><th>" + esc(t("Certezza del dato")) + "</th></tr></thead><tbody>";
+    const cert = { preventivo: t("Preventivo o contratto"), misurato: t("Misurato sul campo"), stima: t("Stima"), ipotesi: t("Ipotesi") };
+    S.voci.forEach(v => {
+      const s = v.tipo === "ben" ? 1 : -1;
+      h += "<tr><td>" + esc(v.nome || t("(senza nome)")) + "</td><td>" + esc(tipoNome(v.tipo)) + '</td><td class="num">' + fmt(s * R.pv[v.id]) + '</td><td class="num">' + numIn("r-" + v.id + "-sf", "voci." + v.id + ".sfav", v.sfav, "short", true) + '</td><td class="num">' + numIn("r-" + v.id + "-fv", "voci." + v.id + ".fav", v.fav, "short", true) + '</td><td><input id="r-' + v.id + '-g" list="gruppi" data-p="voci.' + v.id + '.gruppo" data-t="s" value="' + esc(v.gruppo) + '" style="width:150px"></td><td>' + esc(cert[v.certezza] || "") + "</td></tr>";
+    });
+    const gruppi = {}; S.voci.forEach(v => { const g = (v.gruppo || "").trim(); if (g) gruppi[g] = 1; });
+    h += '</tbody></table></div><datalist id="gruppi">' + Object.keys(gruppi).map(g => '<option value="' + esc(g) + '">').join("") + "</datalist>";
+  } else h += '<p class="empty">' + esc(t("Ancora nessuna voce.")) + "</p>";
+  h += "</div>";
+  h += '<div class="panel"><h2>' + esc(t("Variabili generali")) + '</h2><p class="hint">' + esc(t("Il ritardo sposta in avanti tutti i benefici lasciando fermi i costi. Il tasso mostra se il risultato dipende dal rendimento richiesto.")) + '</p><div class="fields gen">' +
+    '<div class="field"><label class="chk" for="s-rit-on"><input type="checkbox" id="s-rit-on" data-p="sens.ritardo.on" data-t="b"' + (SE.ritardo.on ? " checked" : "") + "> " + esc(t("Testa il ritardo dei benefici")) + "</label>" +
+    '<span class="inl"><label for="s-rit">' + esc(t("Ritardo massimo (anni)")) + "</label>" + numIn("s-rit", "sens.ritardo.anni", SE.ritardo.anni, "short") + '</span><span class="sub">' + esc(t("Anche frazioni: 0,5 = sei mesi.")) + "</span></div>" +
+    '<div class="field"><label class="chk" for="s-tas-on"><input type="checkbox" id="s-tas-on" data-p="sens.tasso.on" data-t="b"' + (SE.tasso.on ? " checked" : "") + "> " + esc(t("Testa il tasso di sconto")) + "</label>" +
+    '<span class="inl"><label for="s-tmin">' + esc(t("Tasso favorevole %")) + "</label>" + numIn("s-tmin", "sens.tasso.min", SE.tasso.min, "short") + "</span>" +
+    '<span class="inl"><label for="s-tmax">' + esc(t("Tasso sfavorevole %")) + "</label>" + numIn("s-tmax", "sens.tasso.max", SE.tasso.max, "short") + "</span></div></div></div>";
+  if (!R.vars.length) return h + '<div class="panel"><p class="empty">' + esc(t("Nessuna variabile: assegna un range ad almeno una voce.")) + "</p></div>";
+  h += '<div class="cols"><div class="panel"><h2>' + esc(t("Quanto si muove il VAN")) + '</h2><p class="hint">' + esc(t("Una variabile alla volta fino ai due estremi, le altre ferme al valore base. In cima quella che pesa di più.")) + "</p>" + legendaTornado() + segnaposto("van") + "</div>" +
+    '<div class="panel"><h2>' + esc(t("Quanto si muove il payback")) + '</h2><p class="hint">' + esc(nz(S.proj.pbMax) > 0 ? t("Le barre che superano la linea del limite indicano i rischi che da soli fanno saltare il criterio.") : t("Imposta un payback massimo nella scheda Progetto per vedere il limite.")) + "</p>" + legendaTornado() + segnaposto("pb") + "</div></div>";
+  h += '<div class="panel"><h2>' + esc(t("I numeri del tornado")) + "</h2>" + tabellaTornado() + "</div>";
+  h += '<div class="panel"><h2>' + esc(t("Soglie di rottura")) + '</h2><p class="hint">' + esc(t("Di quanto può peggiorare ogni variabile, da sola, prima che il progetto smetta di rispettare un criterio. Più la soglia è lontana dall'estremo testato, più il progetto è solido su quel punto.")) + "</p>";
+  h += R.esito.ok ? tabellaSoglie() + '<p class="hint" style="margin:12px 0 0">' + esc(t("La soglia sul ritardo è interpolata, perché il modello ragiona per anni interi.")) + "</p>" : '<p class="empty">' + esc(t("Il caso base non rispetta già i criteri: le soglie non si calcolano.")) + "</p>";
+  h += "</div>";
+  h += '<div class="panel"><h2>' + esc(t("Scenari")) + '</h2><p class="hint">' + esc(t("Nella realtà i problemi arrivano insieme. Il pessimistico mette tutte le variabili all'estremo sfavorevole; aggiungi i tuoi scenari per le combinazioni che ritieni plausibili.")) + "</p>" + tabellaScenari(false) +
+    '<div class="row-actions"><input id="scenNuovo" data-p="ui.scenNome" data-t="s" value="' + esc(UI.scenNome) + '" placeholder="' + esc(t("Nome del nuovo scenario")) + '" class="wide"><button class="act" data-a="scenAdd">' + esc(t("Aggiungi scenario")) + "</button></div></div>";
+  return h;
+}
+
+/* ---------- controlli ---------- */
+function testoControllo(c) {
+  const n = c.voce ? (c.voce.nome || t("(senza nome)")) : "", p = c.par;
+  switch (c.cod) {
+    case "noBen": return [t("Nessun beneficio inserito"), t("Aggiungi almeno un beneficio nella scheda Benefici e costi.")];
+    case "noCosti": return [t("Nessun costo inserito"), t("Un caso senza CAPEX né OPEX non ha payback: inserisci l'investimento.")];
+    case "tasso0": return [t("Tasso di sconto a zero"), t("Con tasso zero il VAN coincide con il flusso netto. Inserisci il tasso aziendale nella scheda Progetto.")];
+    case "noPbMax": return [t("Payback massimo non impostato"), t("Senza limite il responso guarda solo il VAN. Impostalo nella scheda Progetto se l'azienda ne richiede uno.")];
+    case "vanNeg": return [t("VAN negativo"), t("Ai valori base il progetto rende meno del tasso richiesto.")];
+    case "pbOltre": return [t("Payback oltre il limite"), tf("Il payback è {0} anni contro un massimo di {1}.", fmt(p[0], 2), fmt(p[1], decimali(p[1])))];
+    case "pbMai": return [t("L'investimento non rientra"), tf("Il flusso cumulato non torna positivo entro i {0} anni.", NY)];
+    case "orizzonteDiverso": return [tf("Orizzonte di {0} anni invece di 10", p[0]), t("Il template CBA calcola su 10 anni: VAN e payback dell'app non coincideranno con quelli del template finché gli anni sono diversi.")];
+    case "nonRegge": return [tf("Non regge a: {0}", nomeVar(p[0])), tf("All'estremo sfavorevole ({0}) il VAN è {1} e il payback {2}.", rangeVar(p[0]).split(" / ")[0], fmt(p[1].van), fmtPb(p[1].pb))];
+    case "regimeSubito": return [tf("{0}: beneficio a regime già nel {1}", n, p[0]), tf("Il progetto finisce nel {0}. Se il beneficio dipende dal progetto, riduci il primo anno; se non dipende, scrivilo nella fonte.", p[1])];
+    case "concentrato": return [tf("{0} pesa il {1} dei benefici", n, fmtPct(p[0], 0)), t("Più di metà del caso poggia su una sola voce: è la prima da validare e da testare nella sensitivity.")];
+    case "insSenzaCosto": return [tf("{0}: insourcing senza costo interno", n), t("La spesa evitata verso il fornitore non è un guadagno finché non togli il costo per produrre in casa.")];
+    case "insNegativo": return [tf("{0}: produrre in casa costa più che comprare", n), t("Il costo interno supera la spesa evitata: il beneficio è nullo o negativo.")];
+    case "costoSiFerma": return [tf("{0}: il costo si ferma nel {1}", n, p[0]), tf("I benefici continuano fino al {0}. Se il costo è ricorrente, estendilo.", p[1])];
+    case "noContingency": return [t("CAPEX senza contingency"), t("Nessuna voce in categoria Contingency. Se gli importi sono stime, valuta una riserva.")];
+    case "vuota": return [tf("{0}: voce senza importi", n), t("Compila gli anni oppure elimina la voce.")];
+    case "noRange": return [tf("{0}: manca il range di rischio", n), tf("Pesa il {0} del suo lato e non entra nella sensitivity.", fmtPct(p[0], 0))];
+    case "noFonte": return [tf("{0}: manca la fonte del dato", n), tf("Pesa il {0}: chi approva chiederà da dove viene il numero.", fmtPct(p[0], 0))];
+    case "trascurabile": return [tf("{0} pesa meno dell'1%", n), t("Verifica l'unità di misura: un importo in migliaia in mezzo a importi in unità produce questo effetto.")];
+    case "rangeInvertito": return [tf("{0}: range invertito", n), t("L'estremo sfavorevole migliora il risultato o supera quello favorevole. Per un beneficio lo sfavorevole è negativo, per un costo è positivo.")];
+  }
+  return [c.cod, ""];
+}
+const SEV = () => ({ err: ["t-bad", t("Blocca")], warn: ["t-warn", t("Attenzione")], info: ["t-info", t("Nota")] });
+function renderControlli() {
+  let h = bannerEsempio() + '<div class="panel"><h2>' + esc(t("Controlli automatici")) + '</h2><p class="hint">' + esc(t("Le domande che farebbe un controller prima di firmare. Non bloccano nulla: servono a non farsi trovare impreparati.")) + "</p>";
+  if (!CK.length) return h + '<p class="empty">' + esc(t("Nessun rilievo: i controlli non segnalano nulla.")) + "</p></div>";
+  const sev = SEV();
+  h += '<div class="checks">';
+  CK.forEach(c => {
+    const x = testoControllo(c);
+    h += '<div class="check">' + tag(sev[c.sev][0], sev[c.sev][1]) + '<div><div class="t">' + esc(x[0]) + '</div><div class="d">' + esc(x[1]) + (c.voce ? ' <button class="link" data-a="vai" data-arg="' + c.voce.id + '">' + esc(t("Apri la voce")) + "</button>" : "") + "</div></div></div>";
+  });
+  return h + "</div></div>";
+}
+
+/* ---------- versioni ---------- */
+function dataOra(iso) { const d = new Date(iso); if (isNaN(d)) return ""; const p = n => String(n).padStart(2, "0"); return p(d.getDate()) + "/" + p(d.getMonth() + 1) + "/" + d.getFullYear() + " " + p(d.getHours()) + ":" + p(d.getMinutes()); }
+function statoDi(snap) { return { proj: snap.dati.proj, voci: snap.dati.voci, sens: snap.dati.sens }; }
+function renderVersioni() {
+  let h = bannerEsempio() + '<div class="panel"><h2>' + esc(t("Istantanee")) + '</h2><p class="hint">' + esc(t("Salva una fotografia del caso prima di cambiarlo: potrai confrontarla con la versione attuale e vedere cosa ha spostato il risultato. Le istantanee viaggiano dentro il file esportato.")) + "</p>";
+  h += '<div class="row-actions" style="margin:0 0 14px"><input id="snapNome" class="wide" data-p="ui.snapNome" data-t="s" value="' + esc(UI.snapNome) + '" placeholder="' + esc(t("Nome dell'istantanea, per esempio «Inviata al controller»")) + '" style="width:min(420px,100%)"><button class="act" data-a="snapSave">' + esc(t("Salva istantanea")) + "</button></div>";
+  if (!S.snap.length) h += '<p class="empty">' + esc(t("Ancora nessuna istantanea.")) + "</p>";
+  else {
+    h += '<div class="scroller"><table><thead><tr><th>' + esc(t("Istantanea")) + "</th><th>" + esc(t("Salvata il")) + '</th><th class="num">' + esc(t("VAN")) + '</th><th class="num">' + esc(t("Payback")) + '</th><th class="num">' + esc(t("Cash out totale")) + "</th><th></th></tr></thead><tbody>";
+    S.snap.slice().reverse().forEach(sn => {
+      const k = conOrizzonte(sn.dati.proj.anni, () => valuta(statoDi(sn)));
+      h += "<tr><td><b>" + esc(sn.nome) + "</b></td><td>" + esc(dataOra(sn.data)) + '</td><td class="num">' + fmt(k.van) + '</td><td class="num">' + fmtPb(k.pb) + '</td><td class="num">' + fmt(somma(k.out)) + '</td><td class="tools"><button class="link" data-a="snapCmp" data-arg="' + sn.id + '">' + esc(UI.cmp === sn.id ? t("Chiudi il confronto") : t("Confronta con l'attuale")) + '</button> <button class="link" data-a="snapRip" data-arg="' + sn.id + '">' + esc(t("Ripristina")) + '</button> <button class="danger" data-a="snapDel" data-arg="' + sn.id + '" aria-label="' + esc(t("Elimina l'istantanea")) + '">✕</button></td></tr>';
+    });
+    h += "</tbody></table></div>";
+  }
+  h += "</div>";
+  const sn = S.snap.find(x => x.id === UI.cmp);
+  if (sn) {
+    const A = statoDi(sn), nA = orizzonte(A.proj.anni), ka = conOrizzonte(nA, () => valuta(A)), kb = R.base, r = kb.r;
+    h += '<div class="panel"><h2>' + esc(tf("Da «{0}» a oggi", sn.nome)) + "</h2>";
+    const riga = (nome, a, b, f, diff) => "<tr><td>" + esc(nome) + '</td><td class="num">' + f(a) + '</td><td class="num">' + f(b) + '</td><td class="num">' + (a == null || b == null ? "–" : diff(b - a)) + "</td></tr>";
+    h += '<div class="scroller"><table><thead><tr><th></th><th class="num">' + esc(t("Istantanea")) + '</th><th class="num">' + esc(t("Attuale")) + '</th><th class="num">' + esc(t("Differenza")) + "</th></tr></thead><tbody>" +
+      riga(t("VAN"), ka.van, kb.van, x => fmt(x), sgnM) +
+      riga(t("Payback (anni)"), ka.pb, kb.pb, fmtPb, x => sgn(x, 2)) +
+      riga(t("TIR"), ka.tir == null ? null : ka.tir * 100, kb.tir == null ? null : kb.tir * 100, x => x == null ? "–" : fmtPct(x), x => sgn(x, 1) + " pt") +
+      riga(t("Benefici totali"), somma(ka.ben), somma(kb.ben), x => fmt(x), sgnM) +
+      riga(t("Cash out totale"), somma(ka.out), somma(kb.out), x => fmt(x), sgnM) +
+      riga(t("Anni di simulazione"), nA, NY, x => fmt(x, 0), x => sgn(x)) +
+      riga(t("Tasso di sconto %"), nz(A.proj.tasso), nz(S.proj.tasso), x => fmt(x, decimali(x)), x => sgn(x, decimali(x))) + "</tbody></table></div>";
+    const ids = {}; A.voci.forEach(v => ids[v.id] = 1); S.voci.forEach(v => ids[v.id] = 1);
+    let righe = "";
+    Object.keys(ids).forEach(id => {
+      const va0 = A.voci.find(v => v.id === id), vb0 = S.voci.find(v => v.id === id), v = vb0 || va0;
+      const a = va0 ? conOrizzonte(nA, () => importi(va0)) : zeri(), b = vb0 ? importi(vb0) : zeri();
+      if (va0 && vb0 && Math.abs(somma(a) - somma(b)) < 0.5 && Math.abs(va(a, r) - va(b, r)) < 0.5) return;
+      const eff = (va(b, r) - va(a, r)) * (v.tipo === "ben" ? 1 : -1);
+      righe += "<tr><td>" + esc(v.nome || t("(senza nome)")) + " " + (!va0 ? tag("t-ok", t("aggiunta")) : !vb0 ? tag("t-bad", t("tolta")) : "") + "</td><td>" + esc(tipoNome(v.tipo)) + '</td><td class="num">' + (va0 ? fmt(somma(a)) : "–") + '</td><td class="num">' + (vb0 ? fmt(somma(b)) : "–") + '</td><td class="num">' + sgnM(eff) + "</td></tr>";
+    });
+    h += '<h3 style="margin:20px 0 6px;font-size:15px">' + esc(t("Voci cambiate")) + "</h3>";
+    h += righe ? '<div class="scroller"><table><thead><tr><th>' + esc(t("Voce")) + "</th><th>" + esc(t("Tipo")) + '</th><th class="num">' + esc(t("Totale nell'istantanea")) + '</th><th class="num">' + esc(t("Totale attuale")) + '</th><th class="num">' + esc(t("Effetto sul VAN")) + "</th></tr></thead><tbody>" + righe + "</tbody></table></div>" + '<p class="hint" style="margin:10px 0 0">' + esc(t("L'effetto sul VAN è calcolato al tasso attuale, voce per voce.")) + "</p>" : '<p class="empty">' + esc(t("Nessuna voce è cambiata.")) + "</p>";
+    h += "</div>";
+  }
+  return h;
+}
+
+/* ---------- report ---------- */
+function foglio() {
+  const P = S.proj, k = R.base, vd = testoVerdetto(), pbMax = nz(P.pbMax);
+  const oggi = new Date(), p2 = n => String(n).padStart(2, "0");
+  const data = p2(oggi.getDate()) + "/" + p2(oggi.getMonth() + 1) + "/" + oggi.getFullYear();
+  const meta = [t("Analisi costi-benefici con sensitivity"), P.sito, P.pm ? t("Project manager") + ": " + P.pm : "", P.owner ? t("Benefit owner") + ": " + P.owner : "", data].filter(x => x).join(" · ");
+  const tasso = fmtPct(nz(P.tasso), decimali(nz(P.tasso)));
+  let h = '<div class="sheet" id="sheet"><h1>' + esc(P.nome || t("Progetto senza nome")) + '</h1><div class="meta">' + esc(meta) + "</div>";
+  if (S.esempio) h += '<p class="small">' + esc(t("Progetto di esempio.") + " " + t("I numeri sono inventati e servono solo a mostrare come funziona l'app.")) + "</p>";
+  h += '<div class="rv ' + vd.stato + '"><b>' + esc(vd.v) + "</b>" + (vd.p ? "<p>" + esc(vd.p) + "</p>" : "") + "</div>";
+  const critNome = P.criterio === "simple" ? t("Payback semplice") : t("Payback attualizzato");
+  h += '<div class="rk"><div><b>' + fmt(k.van) + "</b><span>" + esc(tf("VAN al {0}", tasso) + " (" + val() + ")") + "</span></div>" +
+    "<div><b>" + fmtPb(k.pb) + "</b><span>" + esc(critNome + (pbMax > 0 ? " · " + tf("limite {0} anni", fmt(pbMax, decimali(pbMax))) : "")) + "</span></div>" +
+    "<div><b>" + (k.tir == null ? "–" : fmtPct(k.tir * 100)) + "</b><span>" + esc(t("TIR")) + "</span></div>" +
+    "<div><b>" + fmt(somma(k.ben)) + "</b><span>" + esc(tf("Benefici in {0} anni", NY)) + "</span></div>" +
+    "<div><b>" + fmt(somma(k.out)) + "</b><span>" + esc(t("Cash out totale")) + "</span></div></div>";
+
+  /* ipotesi */
+  h += '<div class="blk"><h2>' + esc(t("Ipotesi e range")) + "</h2><p>" + esc(tf("Orizzonte di {4} anni ({0}–{1}), tasso di sconto {2}, importi in {3}. Il primo anno non è scontato.", anni(0), anni(NY - 1), tasso, val() || "–", NY)) + " " +
+    esc(R.vars.length ? t("Ogni variabile è stata portata da sola ai due estremi del suo range, con le altre ferme al valore base.") : "") + "</p>";
+  h += "<table><thead><tr><th>" + esc(t("Voce")) + "</th><th>" + esc(t("Tipo")) + '</th><th class="num">' + esc(tf("Totale {0} anni", NY)) + '</th><th class="num">' + esc(t("Valore attuale")) + "</th><th>" + esc(t("Range testato")) + "</th><th>" + esc(t("Fonte del dato")) + "</th></tr></thead><tbody>";
+  S.voci.forEach(v => {
+    const s = v.tipo === "ben" ? 1 : -1, sf = nz(v.sfav), fv = nz(v.fav);
+    h += "<tr><td>" + esc(v.nome || t("(senza nome)")) + "</td><td>" + esc(tipoNome(v.tipo)) + '</td><td class="num">' + fmt(s * somma(k.voci[v.id])) + '</td><td class="num">' + fmt(s * R.pv[v.id]) + "</td><td>" + (sf || fv ? sgn(sf, decimali(sf)) + "% / " + sgn(fv, decimali(fv)) + "%" + (v.gruppo ? " (" + esc(v.gruppo) + ")" : "") : esc(t("fermo al valore base"))) + "</td><td>" + esc(v.fonte) + "</td></tr>";
+  });
+  h += "</tbody></table>";
+  const gen = R.vars.filter(x => x.tipo !== "voci").map(x => nomeVar(x) + ": " + rangeVar(x));
+  if (gen.length) h += '<p class="small">' + esc(t("Variabili generali") + ". " + gen.join("; ") + ".") + "</p>";
+  h += "</div>";
+
+  if (R.vars.length) {
+    const forte = R.tornado.slice().sort((a, b) => Math.abs(b.u.van - b.f.van) - Math.abs(a.u.van - a.f.van))[0];
+    let lo = k.van, hi = k.van; R.tornado.forEach(x => { lo = Math.min(lo, x.u.van, x.f.van); hi = Math.max(hi, x.u.van, x.f.van); });
+    h += '<div class="blk"><h2>' + esc(t("Vista VAN")) + "</h2><p>" + esc(tf("Preso un rischio alla volta, il VAN resta fra {0} e {1}, contro un caso base di {2}. La variabile che lo sposta di più è: {3}.", fmt(lo), fmt(hi), fmt(k.van), nomeVar(forte.v))) + "</p>" + legendaTornado() + segnaposto("van", TL) + "</div>";
+    let plo = null, phi = null, mai = false;
+    R.tornado.forEach(x => [x.u.pb, x.f.pb].forEach(p => { if (p == null) { mai = true; return; } plo = plo == null ? p : Math.min(plo, p); phi = phi == null ? p : Math.max(phi, p); }));
+    let frase = plo == null ? "" : tf("Il payback va da {0} a {1} anni.", fmt(plo, 2), mai ? "> " + NY : fmt(phi, 2));
+    if (pbMax > 0 && R.esito.ok) frase += " " + (R.deboli.length ? tf("Supera il limite di {0} anni con: {1}.", fmt(pbMax, decimali(pbMax)), R.deboli.map(x => nomeVar(x.v) + " (" + rangeVar(x.v).split(" / ")[0] + ")").join(", ")) : tf("Nessuna variabile, da sola, lo porta oltre il limite di {0} anni.", fmt(pbMax, decimali(pbMax))));
+    h += '<div class="blk"><h2>' + esc(t("Vista payback")) + "</h2><p>" + esc(frase) + "</p>" + legendaTornado() + segnaposto("pb", TL) + "</div>";
+    if (R.esito.ok) h += '<div class="blk"><h2>' + esc(t("Soglie di rottura")) + "</h2><p>" + esc(t("Di quanto può peggiorare ogni variabile, da sola, prima che il progetto smetta di rispettare un criterio.")) + "</p>" + tabellaSoglie() + '<p class="small">' + esc(t("La soglia sul ritardo è interpolata, perché il modello ragiona per anni interi.")) + "</p></div>";
+    h += '<div class="blk"><h2>' + esc(t("Scenari")) + "</h2>" + tabellaScenariReport() + "</div>";
+  }
+  h += '<div class="blk"><h2>' + esc(t("Flussi di cassa")) + "</h2>" + legendaFlussi() + segnaposto("flussi", TL) + tabellaFlussi(k) + "</div>";
+  const aperti = CK.filter(c => c.sev !== "info");
+  if (aperti.length) {
+    h += '<div class="blk"><h2>' + esc(t("Punti di attenzione")) + "</h2><ul>";
+    aperti.forEach(c => { const x = testoControllo(c); h += "<li><b>" + esc(x[0]) + ".</b> " + esc(x[1]) + "</li>"; });
+    h += "</ul></div>";
+  }
+  const testi = [[t("Contesto"), P.background], [t("Benefici principali e risultati attesi"), P.benefici], [t("Benefici non misurabili (fuori dal calcolo)"), P.nonMisurabili], [t("Rischi, effetti collaterali e alternative considerate"), P.rischi], [t("Ipotesi di calcolo"), P.ipotesi]].filter(x => (x[1] || "").trim());
+  if (testi.length) {
+    h += "<h2>" + esc(t("Descrizione del caso")) + "</h2>";
+    testi.forEach(x => { h += '<p class="blk"><b>' + esc(x[0]) + ".</b> " + esc(x[1]) + "</p>"; });
+  }
+  h += '<p class="small" style="margin-top:24px">' + esc(tf("Generato con RECKONING {0}. Stesse regole di calcolo del template CBA: primo anno non scontato, payback contato dall'inizio del primo anno.", VERSION)) + "</p></div>";
+  return h;
+}
+function renderReport() {
+  const rl = UI.rlang || LANG;
+  let h = '<div class="panel noprint"><h2>' + esc(t("Report")) + '</h2><p class="hint">' + esc(t("Un foglio sobrio da allegare alla richiesta di approvazione. Puoi scriverlo in una lingua diversa da quella dell'app. Nella finestra di stampa scegli «Salva come PDF» per ottenere il file.")) + '</p><div class="row-actions" style="margin-top:0"><span style="color:var(--dim);font-size:13.5px">' + esc(t("Lingua del report")) + '</span><div class="seg"><button data-a="rlang" data-arg="it" aria-pressed="' + (rl === "it") + '">Italiano</button><button data-a="rlang" data-arg="en" aria-pressed="' + (rl === "en") + '">English</button></div><button class="act" data-a="stampa">' + esc(t("Stampa o salva in PDF")) + "</button></div></div>";
+  const prima = TL; TL = rl;
+  try { h += foglio(); } finally { TL = prima; }
+  return h;
+}
+
+/* ---------- dati e guida ---------- */
+function renderDati() {
+  let h = '<div class="panel"><h2>' + esc(t("File del progetto")) + '</h2><p class="hint">' + esc(t("L'app salva da sola nel browser di questo computer. Il file è la copia che conta: esportalo per conservare il caso, passarlo a un collega o spostarti su un altro computer. Contiene anche le istantanee.")) + '</p><div class="row-actions" style="margin-top:0">' +
+    '<button class="act" data-a="esporta">' + esc(t("Esporta file")) + '</button><button class="act ghost" data-a="importa">' + esc(t("Importa file")) + '</button><button class="act ghost" data-a="csv">' + esc(t("Esporta CSV per il template")) + "</button></div>" +
+    '<p class="hint" style="margin:14px 0 0">' + esc(t("Il CSV riporta le righe nell'ordine del foglio CBA del template, con i costi in negativo, pronte da copiare.")) + "</p></div>";
+  h += '<div class="panel"><h2>' + esc(t("Ricominciare")) + '</h2><div class="row-actions" style="margin-top:0"><button class="act ghost" data-a="nuovo">' + esc(t("Nuovo progetto")) + '</button><button class="act ghost" data-a="esempio">' + esc(t("Carica l'esempio")) + "</button></div></div>";
+  const li = a => "<ul>" + a.map(x => "<li>" + esc(x) + "</li>").join("") + "</ul>";
+  const dl = a => "<dl>" + a.map(x => "<dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd>").join("") + "</dl>";
+  h += '<div class="panel"><h2>' + esc(t("Guida")) + '</h2><div class="guida">' +
+    "<h3>" + esc(t("Come si usa")) + "</h3>" + li([
+      t("Progetto: inserisci i dati generali e i criteri di approvazione, cioè tasso di sconto e payback massimo."),
+      t("Benefici e costi: una riga per voce. Dove puoi, costruisci l'importo da quantità e valore unitario e scrivi la fonte."),
+      t("Per ogni voce incerta apri i dettagli e indica il range di rischio."),
+      t("Responso: leggi VAN, payback e l'esito rispetto ai criteri."),
+      t("Sensitivity: guarda quali variabili pesano e quanto margine resta prima di rompere un criterio."),
+      t("Controlli: risolvi i rilievi o preparati a spiegarli."),
+      t("Versioni: salva un'istantanea prima di ogni modifica importante."),
+      t("Report: stampa il foglio per chi approva.")]) +
+    "<h3>" + esc(t("Parole chiave")) + "</h3>" + dl([
+      [t("VAN, valore attuale netto"), t("La somma dei flussi netti di tutti gli anni riportati a oggi con il tasso di sconto. Sopra zero il progetto rende più del tasso richiesto.")],
+      [t("Payback"), t("Gli anni necessari perché i flussi cumulati tornino a zero, contati dall'inizio del primo anno. Quello attualizzato usa i flussi scontati.")],
+      [t("TIR, tasso interno di rendimento"), t("Il tasso di sconto che porterebbe il VAN a zero: è il rendimento effettivo del progetto.")],
+      [t("Range di rischio"), t("Di quanto una voce può scostarsi dal valore base, nel caso sfavorevole e in quello favorevole. Va scelto in base a quanto è certo il dato, non uguale per tutti.")],
+      [t("Tornado"), t("Il grafico che ordina le variabili per quanto spostano il risultato, muovendone una alla volta.")],
+      [t("Soglia di rottura"), t("Il valore di una variabile che porta il VAN a zero o il payback al limite, con tutte le altre al valore base.")],
+      [t("Insourcing"), t("Portare in casa una lavorazione oggi acquistata. Il beneficio è la differenza fra spesa evitata e costo interno, mai l'intero volume d'acquisto.")]]) +
+    "<h3>" + esc(t("Regole di calcolo")) + "</h3>" + li([
+      t("Orizzonte di 10 anni come nel template, modificabile da 3 a 20 nella scheda Progetto; il primo anno non è scontato, il secondo è scontato di un anno, e così via."),
+      t("Riducendo gli anni, gli importi oltre l'orizzonte restano salvati ma escono dal calcolo: tornano se lo allunghi di nuovo."),
+      t("Valuta e unità degli importi si cambiano nella scheda Progetto, convertendo i numeri oppure solo l'etichetta."),
+      t("Payback = periodo in cui il cumulato diventa positivo, meno 1, più la quota dell'anno necessaria a coprire il residuo."),
+      t("Il ritardo sposta tutti i benefici e lascia fermi i costi. Le frazioni di anno sono interpolate."),
+      t("Nella sensitivity una voce non scende mai sotto zero.")]) +
+    '<div class="nota">' + esc(t("L'app non sostituisce il template ufficiale: usa le stesse formule per VAN e payback e serve a costruire e mettere alla prova il caso. Il prezzo interno del carbonio (ICP) del template non è incluso in questa versione.")) + "</div></div></div>";
+  return h;
+}
+
+const RENDER = { progetto: renderProgetto, voci: renderVoci, responso: renderResponso, sens: renderSens, controlli: renderControlli, versioni: renderVersioni, report: renderReport, dati: renderDati };
+
+/* ============================================================
+   ESEMPIO (numeri inventati)
+   ============================================================ */
+function esempio() {
+  const anno = new Date().getFullYear();
+  const E = nuovoProgetto(anno);
+  E.esempio = true;
+  Object.assign(E.proj, {
+    nome: t("Esempio: cella robotizzata di saldatura"), pm: "", sito: t("Stabilimento di esempio"), dataInizio: anno + "-03-01", dataFine: (anno + 1) + "-02-01",
+    background: t("La saldatura manuale è il collo di bottiglia del reparto. Una cella robotizzata libera ore, riduce le rilavorazioni e permette di riportare in casa una lavorazione oggi acquistata."),
+    benefici: t("3.000 ore di saldatura risparmiate all'anno a regime, rilavorazioni dimezzate, staffe prodotte internamente."),
+    nonMisurabili: t("Minore esposizione degli operatori ai fumi, qualità più costante."),
+    rischi: t("Tempi di messa a punto del robot più lunghi del previsto; in alternativa si potrebbe aggiungere un turno di saldatura manuale."),
+    ipotesi: t("Tariffa oraria di 55, volumi costanti, cella operativa dal secondo anno con salita graduale.")
+  });
+  const serie = (primi, poi) => { const z = zeri(); for (let i = 0; i < NY; i++) z[i] = i < primi.length ? primi[i] : poi; return z; };
+  const V = (tipo, o) => Object.assign(nuovaVoce(tipo), o);
+  E.voci = [
+    V("ben", { nome: t("Ore di saldatura risparmiate"), modo: "driver", qta: serie([0, 1200, 2400], 3000), unitVal: 55, unita: "h", fonte: t("Stima da prove del fornitore del robot"), certezza: "stima", sfav: -25, fav: 10 }),
+    V("ben", { nome: t("Rilavorazioni evitate"), modo: "man", val: serie([0, 20000], 40000), fonte: t("Costo delle rilavorazioni dell'ultimo anno, dimezzato"), certezza: "misurato", sfav: -30, fav: 20 }),
+    V("ben", { nome: t("Insourcing delle staffe"), modo: "ins", ins: { spesa: 300000, quota: 60, materiali: 90000, ore: 800, tariffa: 55, altro: 6000, rampa: serie([0, 50], 100) }, fonte: t("Spesa a consuntivo verso il fornitore, distinta base interna"), certezza: "stima", sfav: -30, fav: 15 }),
+    V("capex", { nome: t("Robot e attrezzature"), cat: CAT_CAPEX[1], modo: "man", val: serie([280000, 120000], 0), fonte: t("Preventivo del fornitore"), certezza: "preventivo", sfav: 5, fav: 0, gruppo: "CAPEX" }),
+    V("capex", { nome: t("Opere civili e impianti"), cat: CAT_CAPEX[0], modo: "man", val: serie([30000], 0), fonte: t("Stima dell'ufficio tecnico"), certezza: "stima", sfav: 20, fav: 0, gruppo: "CAPEX" }),
+    V("capex", { nome: "Contingency", cat: CAT_CAPEX[2], modo: "man", val: serie([0, 40000], 0), fonte: t("Circa il 10% dell'investimento"), certezza: "ipotesi", sfav: 10, fav: -100, gruppo: "CAPEX" }),
+    V("opex", { nome: t("Manutenzione e formazione"), cat: CAT_OPEX[4], modo: "man", val: serie([10000], 15000), fonte: t("Contratto di manutenzione proposto"), certezza: "preventivo", sfav: 20, fav: -10 })
+  ];
+  return E;
+}
+
+/* ============================================================
+   SALVATAGGIO
+   ============================================================ */
+let saveTimer = null;
+/* dentro un artifact di Claude usa il suo storage, altrove quello del browser */
+const store = {
+  async get(k) {
+    if (window.storage && window.storage.get) return await window.storage.get(k);
+    const v = window.localStorage.getItem(k);
+    return v == null ? null : { key: k, value: v };
+  },
+  async set(k, v) {
+    if (window.storage && window.storage.set) return await window.storage.set(k, v);
+    window.localStorage.setItem(k, v);
+    return { key: k, value: v };
+  }
+};
+async function salva() {
+  S.meta.lang = LANG; S.meta.theme = THEME; S.meta.version = VERSION;
+  try { const r = await store.set(KEY, JSON.stringify(S)); if (!r) throw new Error("no"); flag(t("Salvato")); }
+  catch (e) { flag(t("Non salvato nel browser: usa Esporta file"), true); }
+}
+function accodaSalva() { clearTimeout(saveTimer); saveTimer = setTimeout(salva, 700); }
+function flag(msg, bad) {
+  const el = document.getElementById("savedFlag");
+  el.textContent = msg; el.style.fontWeight = bad ? "700" : "400";
+  setTimeout(() => { if (el.textContent === msg) el.textContent = ""; }, bad ? 5000 : 1800);
+}
+async function carica() {
+  try {
+    const r = await store.get(KEY);
+    if (r && r.value) {
+      const o = migrate(JSON.parse(r.value));
+      if (o.meta.lang === "en" || o.meta.lang === "it") LANG = o.meta.lang;
+      if (o.meta.theme === "light" || o.meta.theme === "dark") THEME = o.meta.theme;
+      return o;
+    }
+  } catch (e) { /* nessun dato salvato */ }
+  return null;
+}
+function scarica(nome, testo, mime) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([testo], { type: mime }));
+  a.download = nome; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+}
+function nomeFile(ext) { return "reckoning-" + (S.proj.nome || "progetto").replace(/[^\w\-]+/g, "_").slice(0, 60) + "-" + VERSION + "." + ext; }
+function csv() {
+  const it = LANG === "it", sep = it ? ";" : ",", k = R.base;
+  const n = x => { const s = String(Math.round(x * 1e6) / 1e6); return it ? s.replace(".", ",") : s; };
+  const q = s => { s = String(s == null ? "" : s); return /[";,\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; };
+  const righe = [];
+  const riga = (nome, a, segno, tot) => righe.push([q(nome)].concat(a.map(x => n(segno * x))).concat([tot === false ? "" : n(segno * somma(a))]).join(sep));
+  const testa = () => righe.push([q(t("Anno"))].concat(Array.from({ length: NY }, (x, i) => anni(i))).concat([q(t("Totale"))]).join(sep));
+  righe.push([q(t("Progetto")), q(S.proj.nome)].join(sep));
+  righe.push([q(t("Valuta e unità")), q(val())].join(sep));
+  righe.push("");
+  righe.push(q(t("Benefici"))); testa();
+  S.voci.filter(v => v.tipo === "ben").forEach(v => riga(v.nome, k.voci[v.id], 1));
+  riga(t("Totale benefici"), k.ben, 1);
+  [["capex", "CAPEX", CAT_CAPEX, t("Totale CAPEX"), k.capex], ["opex", "OPEX", CAT_OPEX, t("Totale OPEX"), k.opex]].forEach(g => {
+    righe.push(""); righe.push(q(g[1] + " " + t("(segno negativo)"))); testa();
+    g[2].forEach(c => { const a = zeri(); S.voci.filter(v => v.tipo === g[0] && v.cat === c).forEach(v => { for (let i = 0; i < NY; i++) a[i] += k.voci[v.id][i]; }); riga(t(c), a, -1); });
+    riga(g[3], g[4], -1);
+  });
+  righe.push(""); testa();
+  riga(t("Totale cash out"), k.out, -1); riga(t("Flusso netto"), k.net, 1); riga(t("Flusso cumulato"), k.acc, 1, false); riga(t("Flusso attualizzato"), k.disc, 1); riga(t("Cumulato attualizzato"), k.accDisc, 1, false);
+  righe.push("");
+  righe.push([q(t("Tasso di sconto %")), n(nz(S.proj.tasso))].join(sep));
+  righe.push([q(t("VAN")), n(k.van)].join(sep));
+  righe.push([q(t("Payback attualizzato")), k.pbDisc == null ? "" : n(k.pbDisc)].join(sep));
+  righe.push([q(t("Payback semplice")), k.pbSimple == null ? "" : n(k.pbSimple)].join(sep));
+  righe.push([q(t("TIR")) + " %", k.tir == null ? "" : n(k.tir * 100)].join(sep));
+  return "﻿" + righe.join("\r\n");
+}
+
+/* ============================================================
+   AGGIORNAMENTO DELLO SCHERMO
+   ============================================================ */
+function temaScuro() { return THEME ? THEME === "dark" : !!(window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches); }
+function applicaTema() { if (THEME) document.documentElement.setAttribute("data-theme", THEME); else document.documentElement.removeAttribute("data-theme"); }
+function ricalcola() {
+  adatta(S);
+  DM = S.proj.scala === 1000 ? 1 : S.proj.scala === 1000000 ? 3 : 0;
+  R = calcola(S); CK = controlli(S, R);
+}
+function refresh() {
+  const att = document.activeElement, id = att && att.id;
+  const main = document.getElementById("main");
+  const sc = Array.prototype.map.call(main.querySelectorAll(".scroller"), x => x.scrollLeft);
+  TL = LANG;
+  ricalcola(); renderTesta();
+  main.innerHTML = RENDER[UI.tab]();
+  disegnaGrafici();
+  main.querySelectorAll(".scroller").forEach((x, i) => { if (sc[i]) x.scrollLeft = sc[i]; });
+  if (id) {
+    const el = document.getElementById(id);
+    if (el && el !== document.activeElement) { el.focus({ preventScroll: true }); if (el.tagName === "INPUT" && el.type === "text" && el.select) el.select(); }
+  }
+}
+let giu = false, inAttesa = false;
+function rinfrescaPresto() {
+  if (giu) { inAttesa = true; setTimeout(() => { if (inAttesa) { inAttesa = false; refresh(); } }, 450); }
+  else setTimeout(refresh, 0);
+}
+/* finestra con più scelte: bottoni = [{ t: etichetta, cls, fn }]; fn può restituire false per tenerla aperta */
+function finestra(titolo, corpoHtml, bottoni, annullato) {
+  const m = document.getElementById("modal");
+  m.innerHTML = '<div class="box" role="dialog" aria-modal="true" aria-labelledby="mTit" tabindex="-1"><h3 id="mTit">' + esc(titolo) + "</h3>" + corpoHtml + '<div class="row-actions" style="justify-content:flex-end"><button class="act ghost" id="mNo">' + esc(t("Annulla")) + "</button>" + bottoni.map((b, i) => '<button class="act ' + (b.cls || "") + '" id="mB' + i + '">' + esc(b.t) + "</button>").join("") + "</div></div>";
+  m.hidden = false;
+  const chiudi = () => { m.hidden = true; m.innerHTML = ""; document.removeEventListener("keydown", esc2); };
+  const annulla = () => { chiudi(); if (annullato) annullato(); };
+  const esc2 = e => { if (e.key === "Escape") annulla(); };
+  document.addEventListener("keydown", esc2);
+  document.getElementById("mNo").onclick = annulla;
+  bottoni.forEach((b, i) => { document.getElementById("mB" + i).onclick = () => { if (b.fn() !== false) chiudi(); }; });
+  m.onclick = e => { if (e.target === m) annulla(); };
+  /* il fuoco va sulla finestra, non su un pulsante: un Invio premuto nel campo che l'ha aperta non deve confermare nulla */
+  const primo = m.querySelector(".box input");
+  if (primo) { primo.focus(); primo.select(); } else m.querySelector(".box").focus();
+}
+function chiedi(titolo, testo, etichetta, fn) { finestra(titolo, "<p>" + esc(testo) + "</p>", [{ t: etichetta, fn: fn }]); }
+
+/* ---------- anni di simulazione, valuta e unità ---------- */
+function cambiaAnni(el) {
+  const v = leggiNumero(el.value);
+  if (v === null || Math.round(v) !== v || v < NY_MIN || v > NY_MAX) { el.classList.add("bad"); flag(tf("Gli anni di simulazione vanno da {0} a {1}", NY_MIN, NY_MAX), true); return; }
+  if (v === NY) return;
+  const tagliati = v < NY && oltreOrizzonte(S, v);
+  S.proj.anni = v; accodaSalva(); rinfrescaPresto();
+  if (tagliati) setTimeout(() => flag(tf("Gli importi dopo il {0} restano salvati ma escono dal calcolo", anni(v - 1)), true), 60);
+}
+function allineaIstantanee() { S.snap.forEach(sn => { if (sn.dati && sn.dati.proj) { sn.dati.proj.valuta = S.proj.valuta; sn.dati.proj.scala = S.proj.scala; } }); }
+function cambiaScala(el) {
+  const prima = S.proj.scala || 1, dopo = +el.value;
+  if (dopo === prima) return;
+  const applica = k => { if (k !== 1) converti(S, k); S.proj.scala = dopo; allineaIstantanee(); accodaSalva(); refresh(); };
+  if (!haImporti(S)) { applica(1); return; }
+  const u0 = prefisso(prima) + S.proj.valuta, u1 = prefisso(dopo) + S.proj.valuta, es = 250000;
+  const corpo = "<p>" + esc(tf("Oggi gli importi sono in {0}. Passando a {1} puoi:", u0, u1)) + "</p><ul><li><b>" + esc(t("Convertire gli importi")) + ".</b> " + esc(tf("I numeri vengono ricalcolati: {0} {1} diventa {2} {3}.", fmt(es / prima, decimali(es / prima)), u0, fmt(es / dopo, decimali(es / dopo)), u1)) + "</li><li><b>" + esc(t("Cambiare solo l'etichetta")) + ".</b> " + esc(tf("I numeri restano uguali. Usalo se li avevi già scritti in {0}.", u1)) + "</li></ul>";
+  finestra(t("Cambiare l'unità degli importi?"), corpo, [{ t: t("Cambia solo l'etichetta"), cls: "ghost", fn: () => applica(1) }, { t: t("Converti gli importi"), fn: () => applica(prima / dopo) }], refresh);
+}
+function cambiaValuta(el) {
+  const prima = (S.proj.valuta || "").trim(), dopo = el.value.trim();
+  if (dopo === prima) return;
+  const applica = k => { if (k !== 1) converti(S, k); S.proj.valuta = dopo; allineaIstantanee(); accodaSalva(); refresh(); };
+  if (!haImporti(S) || !prima || !dopo) { applica(1); return; }
+  const corpo = "<p>" + esc(tf("Oggi gli importi sono in {0}. Passando a {1} puoi convertirli a un cambio oppure cambiare solo l'etichetta, se i numeri erano già in {1}.", prima, dopo)) + '</p><p style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;color:var(--ink)"><label for="mRate">' + esc(tf("Cambio: 1 {0} =", prima)) + '</label><input id="mRate" class="num" inputmode="decimal" autocomplete="off" value="' + (LANG === "it" ? "1,00" : "1.00") + '"><span>' + esc(dopo) + "</span></p>";
+  finestra(t("Cambiare valuta?"), corpo, [{ t: t("Cambia solo l'etichetta"), cls: "ghost", fn: () => applica(1) }, { t: t("Converti al cambio indicato"), fn: () => {
+    const inp = document.getElementById("mRate"), k = leggiNumero(inp.value);
+    if (k === null || !(k > 0)) { inp.classList.add("bad"); inp.focus(); return false; }
+    applica(k);
+  } }], refresh);
+}
+
+/* ---------- scrittura nello stato ---------- */
+function scrivi(path, v) {
+  const tk = path.split(".");
+  let o = tk[0] === "ui" ? UI : S, i = tk[0] === "ui" ? 1 : 0;
+  for (; i < tk.length - 1; i++) {
+    if (tk[i] === "voci" && o === S) { o = S.voci.find(x => x.id === tk[i + 1]); i++; if (!o) return false; continue; }
+    if (o[tk[i]] == null) o[tk[i]] = {};
+    o = o[tk[i]];
+  }
+  o[tk[tk.length - 1]] = v;
+  return true;
+}
+function cambia(el) {
+  const tipo = el.dataset.t; let v;
+  if (tipo === "n" || tipo === "i") {
+    v = leggiNumero(el.value);
+    if (v === null || (tipo === "i" && Math.round(v) !== v)) { el.classList.add("bad"); flag(t("Numero non valido: usa solo cifre e un separatore decimale"), true); return; }
+    if (tipo === "n") { const vuoto = el.value.trim() === ""; el.dataset.raw = vuoto ? "" : grezzo(v); el.dataset.fmt = vuoto ? "" : fmtAuto(v); }
+  } else if (tipo === "b") v = el.checked;
+  else v = el.value;
+  el.classList.remove("bad");
+  scrivi(el.dataset.p, v);
+  if (el.dataset.p.indexOf("ui.") !== 0) accodaSalva();
+  rinfrescaPresto();
+}
+
+/* ---------- azioni ---------- */
+function clona(o) { return JSON.parse(JSON.stringify(o)); }
+function azione(a, arg) {
+  inAttesa = false;
+  const voce = () => S.voci.find(v => v.id === arg);
+  switch (a) {
+    case "tab": UI.tab = arg; try { history.replaceState(null, "", "#" + arg); } catch (e) { } refresh(); window.scrollTo(0, 0); return;
+    case "lang": LANG = arg; TL = arg; accodaSalva(); refresh(); return;
+    case "tema": THEME = temaScuro() ? "light" : "dark"; applicaTema(); accodaSalva(); refresh(); return;
+    case "rlang": UI.rlang = arg; refresh(); return;
+    case "stampa": window.print(); return;
+    case "add": { const v = nuovaVoce(arg); S.voci.push(v); UI.open[v.id] = true; accodaSalva(); refresh(); const el = document.getElementById("v-" + v.id + "-n"); if (el) el.focus(); return; }
+    case "tog": UI.open[arg] = !UI.open[arg]; refresh(); return;
+    case "dup": { const v = voce(); if (!v) return; const c = clona(v); c.id = uid(); c.nome = tf("{0} (copia)", v.nome); S.voci.splice(S.voci.indexOf(v) + 1, 0, c); UI.open[c.id] = true; accodaSalva(); refresh(); return; }
+    case "del": { const v = voce(); if (!v) return; chiedi(t("Eliminare la voce?"), tf("«{0}» verrà tolta dal caso. Se ti serve un confronto, salva prima un'istantanea.", v.nome || t("(senza nome)")), t("Elimina"), () => { S.voci = S.voci.filter(x => x.id !== arg); accodaSalva(); refresh(); }); return; }
+    case "sugg": { const v = voce(); if (!v) return; const g = CERTEZZE[v.certezza] || CERTEZZE.stima; v.sfav = v.tipo === "ben" ? -g[0] : g[0]; v.fav = v.tipo === "ben" ? g[1] : -g[1]; accodaSalva(); refresh(); return; }
+    case "fill": { const v = voce(), F = UI.fill[arg]; if (!v || !F) return; const arr = v.modo === "driver" ? v.qta : v.modo === "ins" ? v.ins.rampa : v.val; const da = Math.min(nz(F.da), nz(F.a)), al = Math.max(nz(F.da), nz(F.a)); for (let i = da; i <= al && i < NY; i++) arr[i] = nz(F.v); accodaSalva(); refresh(); return; }
+    case "vai": UI.tab = "voci"; UI.open[arg] = true; refresh(); { const el = document.getElementById("v-" + arg + "-n"); if (el) { el.scrollIntoView({ block: "center" }); el.focus(); } } return;
+    case "scenAdd": { const nome = (UI.scenNome || "").trim() || tf("Scenario {0}", S.sens.scenari.length + 1); S.sens.scenari.push({ id: uid(), nome: nome, livelli: {} }); UI.scenNome = ""; accodaSalva(); refresh(); return; }
+    case "scenDel": S.sens.scenari = S.sens.scenari.filter(x => x.id !== arg); accodaSalva(); refresh(); return;
+    case "snapSave": { const nome = (UI.snapNome || "").trim() || tf("Istantanea {0}", S.snap.length + 1); S.snap.push({ id: uid(), nome: nome, data: new Date().toISOString(), dati: clona({ proj: S.proj, voci: S.voci, sens: S.sens }) }); UI.snapNome = ""; accodaSalva(); refresh(); flag(t("Istantanea salvata")); return; }
+    case "snapCmp": UI.cmp = UI.cmp === arg ? null : arg; refresh(); return;
+    case "snapDel": { const sn = S.snap.find(x => x.id === arg); if (!sn) return; chiedi(t("Eliminare l'istantanea?"), tf("«{0}» non potrà essere recuperata.", sn.nome), t("Elimina"), () => { S.snap = S.snap.filter(x => x.id !== arg); if (UI.cmp === arg) UI.cmp = null; accodaSalva(); refresh(); }); return; }
+    case "snapRip": { const sn = S.snap.find(x => x.id === arg); if (!sn) return; chiedi(t("Ripristinare l'istantanea?"), tf("Il caso attuale verrà sostituito da «{0}». Le modifiche non salvate in un'istantanea andranno perse.", sn.nome), t("Ripristina"), () => { const d = clona(sn.dati); S.proj = d.proj; S.voci = d.voci; S.sens = d.sens; migrate(S); accodaSalva(); refresh(); }); return; }
+    case "esporta": S.meta.lang = LANG; S.meta.theme = THEME; S.meta.version = VERSION; scarica(nomeFile("json"), JSON.stringify(S, null, 2), "application/json"); return;
+    case "csv": scarica(nomeFile("csv"), csv(), "text/csv;charset=utf-8"); return;
+    case "importa": document.getElementById("importFile").click(); return;
+    case "nuovo": chiedi(t("Iniziare un nuovo progetto?"), t("Il caso aperto verrà sostituito da un progetto vuoto. Esporta prima il file se vuoi conservarlo."), t("Nuovo progetto"), () => { S = nuovoProgetto(); UI.open = {}; UI.cmp = null; UI.tab = "progetto"; accodaSalva(); refresh(); }); return;
+    case "esempio": chiedi(t("Caricare l'esempio?"), t("Il caso aperto verrà sostituito dal progetto di esempio. Esporta prima il file se vuoi conservarlo."), t("Carica l'esempio"), () => { S = esempio(); UI.open = {}; UI.cmp = null; accodaSalva(); refresh(); }); return;
+  }
+}
+
+/* ============================================================
+   AVVIO
+   ============================================================ */
+function avvia() {
+  document.addEventListener("pointerdown", () => { giu = true; }, true);
+  const su = () => { giu = false; if (inAttesa) setTimeout(() => { if (inAttesa) { inAttesa = false; refresh(); } }, 0); };
+  document.addEventListener("pointerup", su, true);
+  document.addEventListener("pointercancel", su, true);
+  document.addEventListener("click", e => { const b = e.target.closest("[data-a]"); if (b) azione(b.dataset.a, b.dataset.arg); });
+  document.addEventListener("change", e => {
+    const el = e.target;
+    if (el.id === "importFile") {
+      const f = el.files[0]; if (!f) return;
+      const rd = new FileReader();
+      rd.onload = () => {
+        try { S = migrate(JSON.parse(rd.result)); S.esempio = false; UI.open = {}; UI.cmp = null; salva(); refresh(); flag(t("File importato")); }
+        catch (err) { flag(t("File non leggibile: non è un salvataggio di RECKONING"), true); }
+        el.value = "";
+      };
+      rd.readAsText(f); return;
+    }
+    if (el.dataset.c === "anni") { cambiaAnni(el); return; }
+    if (el.dataset.c === "scala") { cambiaScala(el); return; }
+    if (el.dataset.c === "valuta") { cambiaValuta(el); return; }
+    if (el.dataset.c === "scenLiv") { const sc = S.sens.scenari.find(x => x.id === el.dataset.sid); if (sc) { sc.livelli[el.dataset.vid] = el.value; accodaSalva(); rinfrescaPresto(); } return; }
+    if (el.dataset.c === "scenNome") { const sc = S.sens.scenari.find(x => x.id === el.dataset.sid); if (sc) { sc.nome = el.value; accodaSalva(); rinfrescaPresto(); } return; }
+    if (el.dataset.p) cambia(el);
+  });
+  /* i numeri si mostrano con i separatori e si modificano senza */
+  document.addEventListener("focusin", e => {
+    const el = e.target;
+    if (el.dataset && el.dataset.t === "n" && !el.classList.contains("bad")) { el.value = el.dataset.raw || ""; el.select(); }
+    if (el.dataset && el.dataset.tip) mostraTip(el, null);
+  });
+  document.addEventListener("focusout", e => {
+    const el = e.target;
+    if (el.dataset && el.dataset.t === "n" && !el.classList.contains("bad") && leggiNumero(el.value) === leggiNumero(el.dataset.raw || "")) el.value = el.dataset.fmt || "";
+    if (el.dataset && el.dataset.tip) nascondiTip();
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Enter" && e.target.tagName === "INPUT" && (e.target.dataset.p || e.target.dataset.c)) e.target.blur(); });
+  /* tooltip dei grafici */
+  const tip = document.getElementById("tip");
+  function mostraTip(el, ev) {
+    tip.textContent = el.dataset.tip; tip.hidden = false;
+    const r = el.getBoundingClientRect(), x = ev ? ev.clientX : r.left + r.width / 2, y = ev ? ev.clientY : r.top;
+    const w = tip.offsetWidth, hh = tip.offsetHeight;
+    tip.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, x + 14)) + "px";
+    tip.style.top = Math.max(8, y - hh - 12 < 8 ? y + 18 : y - hh - 12) + "px";
+  }
+  function nascondiTip() { tip.hidden = true; }
+  document.addEventListener("pointermove", e => { const el = e.target.closest ? e.target.closest("[data-tip]") : null; if (el) mostraTip(el, e); else if (!tip.hidden) nascondiTip(); });
+  document.addEventListener("scroll", nascondiTip, { passive: true });
+  /* intestazione compatta quando si scorre */
+  const testa = document.getElementById("top");
+  window.addEventListener("scroll", () => {
+    const y = window.scrollY;
+    if (y > 140 && !testa.classList.contains("compact")) testa.classList.add("compact");
+    else if (y < 30 && testa.classList.contains("compact")) testa.classList.remove("compact");
+  }, { passive: true });
+  let tRes = null;
+  window.addEventListener("resize", () => { clearTimeout(tRes); tRes = setTimeout(() => disegnaGrafici(), 150); });
+  window.addEventListener("beforeprint", () => disegnaGrafici(690));
+  window.addEventListener("afterprint", () => disegnaGrafici());
+  if (window.matchMedia) { const mq = window.matchMedia("(prefers-color-scheme: dark)"); if (mq.addEventListener) mq.addEventListener("change", () => { if (!THEME) refresh(); }); }
+
+  carica().then(o => {
+    if (!o && !/^it/i.test(navigator.language || "it")) LANG = "en";
+    TL = LANG;
+    S = o || esempio();
+    applicaTema();
+    const h = (location.hash || "").slice(1);
+    if (RENDER[h]) UI.tab = h;
+    refresh();
+  });
+}
+avvia();
+</script>
+</body>
+</html>
