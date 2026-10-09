@@ -213,6 +213,8 @@ td.tools{white-space:nowrap;text-align:right}
 .kpi .n small{font-size:13px;font-weight:600;color:var(--dim)}
 .kpi .l{font-size:13.5px;color:var(--dim);margin-top:3px}
 .kpi .s{font-size:12.5px;margin-top:6px}
+/* cifra con il calcolo spiegato al passaggio del mouse */
+.spiega{cursor:help;text-decoration:underline dotted color-mix(in srgb, currentColor 45%, transparent);text-underline-offset:3px}
 .banner{background:var(--info-bg);border:1px solid var(--info-br);color:var(--info-fg);border-radius:14px;padding:10px 16px;margin-bottom:22px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;font-size:14px}
 .banner .sp{margin-left:auto;display:flex;gap:8px;flex-wrap:wrap}
 
@@ -303,6 +305,7 @@ footer.foot{border-top:1px solid var(--border-2);background:var(--panel);margin-
 
 @media print{
   @page{size:A4;margin:14mm}
+  .spiega{text-decoration:none}
   body{background:#fff}
   header.top,footer.foot,.noprint,#tip,#modal{display:none!important}
   main{padding:0;max-width:none}
@@ -1152,13 +1155,39 @@ const EN = {
   "Cambio: 1 {0} =": "Rate: 1 {0} =",
   "Cambiare valuta?": "Change currency?",
   "Converti al cambio indicato": "Convert at this rate",
-  "Sottoassorbimento": "Under absorption"
+  "Sottoassorbimento": "Under absorption",
+  "VAN = somma dei flussi netti attualizzati": "NPV = sum of discounted net flows",
+  "flusso dell'anno i ÷ (1 + {0})^i; il primo anno non è scontato": "flow of year i ÷ (1 + {0})^i; the first year is not discounted",
+  "Il cumulato non torna a zero entro {0} anni": "The cumulative does not return to zero within {0} years",
+  "anni interi prima del rientro + frazione dell'anno di rientro": "whole years before payback + fraction of the payback year",
+  "cumulato a fine {0}: {1}": "cumulative at end of {0}: {1}",
+  "flusso del {0}: {1}": "flow of {0}: {1}",
+  "TIR = il tasso che porta il VAN a zero": "IRR = the rate that brings NPV to zero",
+  "Non esiste un tasso che azzeri il VAN con questi flussi": "No rate brings NPV to zero with these flows",
+  "VAN al {0} = {1} (≈ 0)": "NPV at {0} = {1} (≈ 0)",
+  "Confronto: VAN al tasso richiesto {0} = {1}": "For comparison: NPV at the required rate {0} = {1}",
+  "Valore attuale = somma degli importi attualizzati": "Present value = sum of discounted amounts",
+  "importo dell'anno i ÷ (1 + {0})^i": "amount of year i ÷ (1 + {0})^i",
+  "Benefici anno per anno": "Benefits year by year",
+  "Cash out = CAPEX + OPEX": "Cash out = CAPEX + OPEX",
+  "CAPEX {0} + OPEX {1}": "CAPEX {0} + OPEX {1}",
+  "Flusso netto = benefici − cash out": "Net flow = benefits − cash out",
+  "Cumulato = cumulato dell'anno prima + flusso netto": "Cumulative = previous year's cumulative + net flow",
+  "Flusso attualizzato = flusso netto ÷ (1 + {0})^{1}": "Discounted flow = net flow ÷ (1 + {0})^{1}",
+  "Cumulato attualizzato = cumulato dell'anno prima + flusso attualizzato": "Discounted cumulative = previous year's cumulative + discounted flow",
+  "Peso = valore attuale della voce ÷ valore attuale di tutti i {0}": "Weight = item present value ÷ present value of all {0}",
+  "benefici": "benefits",
+  "costi": "costs",
+  "VAN con «{0}» all'estremo sfavorevole ({1}), tutto il resto al valore base": "NPV with “{0}” at the unfavourable end ({1}), everything else at base",
+  "VAN con «{0}» all'estremo favorevole ({1}), tutto il resto al valore base": "NPV with “{0}” at the favourable end ({1}), everything else at base",
+  "Oscillazione = distanza fra VAN favorevole e sfavorevole": "Swing = distance between favourable and unfavourable NPV",
+  "VAN dello scenario, con le variabili ai livelli scelti": "Scenario NPV, with the variables at the chosen levels"
 };
 
 /* ============================================================
    VERSIONE / LINGUA / TEMA / STATO
    ============================================================ */
-const VERSION = "v1.1";
+const VERSION = "v1.2";
 const KEY = "reckoning:state:v1";
 let LANG = "it";      /* lingua dell'interfaccia */
 let TL = "it";        /* lingua in cui si sta scrivendo adesso (il report può averne una sua) */
@@ -1198,6 +1227,39 @@ function sgnM(n) { return sgn(n, DM); }
 const SCALE = [[1, ""], [1000, "k"], [1000000, "M"]];
 function prefisso(scala) { const s = SCALE.find(x => x[0] === +scala); return s ? s[1] : ""; }
 function fmtPb(p) { return p == null ? t("non rientra") : fmt(p, 2); }
+
+/* ---------- formule spiegate: passando il mouse su una cifra compare come è stata calcolata ---------- */
+function spiega(html, righe) { return '<span class="spiega" title="' + esc(righe.filter(x => x != null && x !== "").join("\n")) + '">' + html + "</span>"; }
+const SPG = {
+  van(k) {
+    return [t("VAN = somma dei flussi netti attualizzati"), tf("flusso dell'anno i ÷ (1 + {0})^i; il primo anno non è scontato", fmtPct(k.r * 100, decimali(k.r * 100)))]
+      .concat(k.net.map((x, i) => "  " + anni(i) + ": " + fmt(x) + " ÷ " + fmt(Math.pow(1 + k.r, i), 4) + " = " + fmt(k.disc[i])))
+      .concat(["= " + fmt(k.van) + " " + val()]);
+  },
+  pb(flussi, cum, nome) {
+    let i0 = null;
+    for (let i = 1; i < NY; i++) if (cum[i - 1] < 0 && cum[i] >= 0 && flussi[i] !== 0) i0 = i;
+    if (i0 == null) return [nome, tf("Il cumulato non torna a zero entro {0} anni", NY)].concat(cum.map((x, i) => "  " + anni(i) + ": " + fmt(x)));
+    return [nome + " = " + t("anni interi prima del rientro + frazione dell'anno di rientro"),
+      tf("cumulato a fine {0}: {1}", anni(i0 - 1), fmt(cum[i0 - 1])), tf("flusso del {0}: {1}", anni(i0), fmt(flussi[i0])),
+      i0 + " + " + fmt(Math.abs(cum[i0 - 1])) + " ÷ " + fmt(flussi[i0]) + " = " + fmt(i0 + Math.abs(cum[i0 - 1] / flussi[i0]), 2) + " " + t("anni")];
+  },
+  tir(k) {
+    if (k.tir == null) return [t("TIR = il tasso che porta il VAN a zero"), t("Non esiste un tasso che azzeri il VAN con questi flussi")];
+    return [t("TIR = il tasso che porta il VAN a zero"), tf("VAN al {0} = {1} (≈ 0)", fmtPct(k.tir * 100), fmt(vanDi(k.net, k.tir))), tf("Confronto: VAN al tasso richiesto {0} = {1}", fmtPct(k.r * 100, decimali(k.r * 100)), fmt(k.van))];
+  },
+  serie(titolo, a) { return [titolo].concat(a.map((x, i) => x ? "  " + anni(i) + ": " + fmt(x) : null)).concat(["= " + fmt(somma(a))]); },
+  /* le voci di un tipo che compongono un anno */
+  anno(tipo, j) {
+    const lista = S.voci.filter(v => v.tipo === tipo && R.base.voci[v.id] && R.base.voci[v.id][j]);
+    return lista.map(v => "  " + (v.nome || t("(senza nome)")) + ": " + fmt(R.base.voci[v.id][j]) + (v.modo === "driver" ? " (" + fmtAuto(nz(v.qta[j])) + " × " + fmtAuto(nz(v.unitVal)) + ")" : v.modo === "ins" ? " (" + fmt(insNetto(v).netto) + " × " + fmtAuto(nz(v.ins.rampa[j])) + "%)" : ""));
+  },
+  pv(v) {
+    const a = R.base.voci[v.id], r = R.base.r;
+    return [t("Valore attuale = somma degli importi attualizzati"), tf("importo dell'anno i ÷ (1 + {0})^i", fmtPct(r * 100, decimali(r * 100)))]
+      .concat(a.map((x, i) => x ? "  " + anni(i) + ": " + fmt(x) + " ÷ " + fmt(Math.pow(1 + r, i), 4) + " = " + fmt(x / Math.pow(1 + r, i)) : null)).concat(["= " + fmt(R.pv[v.id])]);
+  }
+};
 function anni(i) { return Math.round(nz(S.proj.anno0)) + i; }
 function val() { return prefisso(S.proj.scala) + (S.proj.valuta || "").trim(); }
 /* legge un numero scritto a mano: solo cifre, segno e un separatore decimale (punto o virgola) */
@@ -1442,10 +1504,10 @@ function kpiStriscia() {
   const k = R.base, P = S.proj;
   const crit = P.criterio === "simple" ? t("Payback semplice") : t("Payback attualizzato");
   return '<div class="kpis">' +
-    '<div class="kpi"><div class="n">' + fmt(k.van) + " <small>" + esc(val()) + '</small></div><div class="l">' + esc(tf("VAN al {0}", fmtPct(nz(P.tasso), decimali(nz(P.tasso))))) + "</div></div>" +
-    '<div class="kpi"><div class="n">' + fmtPb(k.pb) + (k.pb != null ? " <small>" + esc(t("anni")) + "</small>" : "") + '</div><div class="l">' + esc(crit) + "</div></div>" +
-    '<div class="kpi"><div class="n">' + fmt(somma(k.ben)) + '</div><div class="l">' + esc(tf("Benefici in {0} anni", NY)) + "</div></div>" +
-    '<div class="kpi"><div class="n">' + fmt(somma(k.out)) + '</div><div class="l">' + esc(t("Cash out totale")) + "</div></div></div>";
+    '<div class="kpi"><div class="n">' + spiega(fmt(k.van), SPG.van(k)) + " <small>" + esc(val()) + '</small></div><div class="l">' + esc(tf("VAN al {0}", fmtPct(nz(P.tasso), decimali(nz(P.tasso))))) + "</div></div>" +
+    '<div class="kpi"><div class="n">' + spiega(fmtPb(k.pb), P.criterio === "simple" ? SPG.pb(k.net, k.acc, crit) : SPG.pb(k.disc, k.accDisc, crit)) + (k.pb != null ? " <small>" + esc(t("anni")) + "</small>" : "") + '</div><div class="l">' + esc(crit) + "</div></div>" +
+    '<div class="kpi"><div class="n">' + spiega(fmt(somma(k.ben)), SPG.serie(t("Benefici anno per anno"), k.ben)) + '</div><div class="l">' + esc(tf("Benefici in {0} anni", NY)) + "</div></div>" +
+    '<div class="kpi"><div class="n">' + spiega(fmt(somma(k.out)), [t("Cash out = CAPEX + OPEX"), tf("CAPEX {0} + OPEX {1}", fmt(somma(k.capex)), fmt(somma(k.opex))), "= " + fmt(somma(k.out))]) + '</div><div class="l">' + esc(t("Cash out totale")) + "</div></div></div>";
 }
 const MODI = () => [["man", t("Importi per anno")], ["driver", t("Quantità × valore")]];
 function rangeTesto(v) {
@@ -1466,7 +1528,7 @@ function rigaVoce(v) {
   for (let j = 0; j < NY; j++) {
     h += '<td class="yr">' + numIn("v-" + id + "-y" + j, "voci." + id + "." + arr + "." + j, src[j], "", true) + (v.modo !== "man" ? '<span class="calc">' + (a[j] ? fmt(a[j]) : "&nbsp;") + "</span>" : "") + "</td>";
   }
-  h += '<td class="num"><b>' + fmt(somma(a)) + "</b></td></tr>";
+  h += '<td class="num"><b>' + spiega(fmt(somma(a)), SPG.serie(tf("Totale {0} anni", NY) + " · " + (v.nome || t("(senza nome)")), a)) + "</b></td></tr>";
   if (open) h += '<tr class="det"><td colspan="' + (NY + 3) + '">' + dettaglioVoce(v) + "</td></tr>";
   return h;
 }
@@ -1556,30 +1618,32 @@ function testoVerdetto() {
   return { stato: "ok", k: t("Responso"), v: R.vars.length ? t("Rispetta i criteri e regge a ogni rischio testato.") : t("Rispetta i criteri. Nessun rischio ancora testato."), p: base };
 }
 function tabellaFlussi(k) {
-  const riga = (nome, a, segno, cls) => {
+  const riga = (nome, a, segno, cls, sp) => {
     let h = '<tr class="' + (cls || "") + '"><td>' + esc(nome) + "</td>";
-    for (let j = 0; j < NY; j++) { const x = segno * a[j]; h += '<td class="num' + (x < 0 ? " neg" : "") + '">' + (x ? fmt(x) : "") + "</td>"; }
+    for (let j = 0; j < NY; j++) { const x = segno * a[j]; h += '<td class="num' + (x < 0 ? " neg" : "") + '">' + (x ? (sp ? spiega(fmt(x), sp(j)) : fmt(x)) : "") + "</td>"; }
     return h;
   };
+  const fat = j => fmt(Math.pow(1 + k.r, j), 4);
+  const voceAnno = (tipo, tit) => j => (k === R.base ? [tit + " " + anni(j)].concat(SPG.anno(tipo, j)) : [tit + " " + anni(j)]);
   const tot = (a, segno) => { const x = segno * somma(a); return '<td class="num' + (x < 0 ? " neg" : "") + '">' + fmt(x) + "</td></tr>"; };
   let h = '<div class="scroller"><table class="matrix"><thead><tr><th></th>';
   for (let j = 0; j < NY; j++) h += '<th class="num">' + anni(j) + "</th>";
   h += '<th class="num">' + esc(t("Totale")) + "</th></tr></thead><tbody>";
-  h += riga(t("Totale benefici"), k.ben, 1) + tot(k.ben, 1);
-  h += riga(t("Totale CAPEX"), k.capex, -1) + tot(k.capex, -1);
-  h += riga(t("Totale OPEX"), k.opex, -1) + tot(k.opex, -1);
-  h += riga(t("Totale cash out"), k.out, -1, "strong") + tot(k.out, -1);
-  h += riga(t("Flusso netto"), k.net, 1, "strong sep") + tot(k.net, 1);
-  h += riga(t("Flusso cumulato"), k.acc, 1) + '<td class="num"></td></tr>';
-  h += riga(t("Flusso attualizzato"), k.disc, 1, "strong sep") + tot(k.disc, 1);
-  h += riga(t("Cumulato attualizzato"), k.accDisc, 1) + '<td class="num"></td></tr>';
+  h += riga(t("Totale benefici"), k.ben, 1, "", voceAnno("ben", t("Benefici"))) + tot(k.ben, 1);
+  h += riga(t("Totale CAPEX"), k.capex, -1, "", voceAnno("capex", "CAPEX")) + tot(k.capex, -1);
+  h += riga(t("Totale OPEX"), k.opex, -1, "", voceAnno("opex", "OPEX")) + tot(k.opex, -1);
+  h += riga(t("Totale cash out"), k.out, -1, "strong", j => [t("Cash out = CAPEX + OPEX"), fmt(k.capex[j]) + " + " + fmt(k.opex[j]) + " = " + fmt(k.out[j])]) + tot(k.out, -1);
+  h += riga(t("Flusso netto"), k.net, 1, "strong sep", j => [t("Flusso netto = benefici − cash out"), fmt(k.ben[j]) + " − " + fmt(k.out[j]) + " = " + fmt(k.net[j])]) + tot(k.net, 1);
+  h += riga(t("Flusso cumulato"), k.acc, 1, "", j => [t("Cumulato = cumulato dell'anno prima + flusso netto"), (j ? fmt(k.acc[j - 1]) : "0") + " + " + fmt(k.net[j]) + " = " + fmt(k.acc[j])]) + '<td class="num"></td></tr>';
+  h += riga(t("Flusso attualizzato"), k.disc, 1, "strong sep", j => [tf("Flusso attualizzato = flusso netto ÷ (1 + {0})^{1}", fmtPct(k.r * 100, decimali(k.r * 100)), j), fmt(k.net[j]) + " ÷ " + fat(j) + " = " + fmt(k.disc[j])]) + tot(k.disc, 1);
+  h += riga(t("Cumulato attualizzato"), k.accDisc, 1, "", j => [t("Cumulato attualizzato = cumulato dell'anno prima + flusso attualizzato"), (j ? fmt(k.accDisc[j - 1]) : "0") + " + " + fmt(k.disc[j]) + " = " + fmt(k.accDisc[j])]) + '<td class="num"></td></tr>';
   return h + "</tbody></table></div>";
 }
 function tabellaPesi() {
   let h = '<div class="scroller"><table><thead><tr><th>' + esc(t("Voce")) + "</th><th>" + esc(t("Tipo")) + '</th><th class="num">' + esc(tf("Totale {0} anni", NY)) + '</th><th class="num">' + esc(t("Valore attuale")) + '</th><th class="num">' + esc(t("Peso sul suo lato")) + "</th><th>" + esc(t("Range")) + "</th></tr></thead><tbody>";
   S.voci.slice().sort((a, b) => (a.tipo === "ben" ? 0 : 1) - (b.tipo === "ben" ? 0 : 1) || R.pv[b.id] - R.pv[a.id]).forEach(v => {
     const lato = v.tipo === "ben" ? R.pvBen : R.pvCosti, s = v.tipo === "ben" ? 1 : -1;
-    h += "<tr><td>" + esc(v.nome || t("(senza nome)")) + "</td><td>" + esc(tipoNome(v.tipo)) + '</td><td class="num">' + fmt(s * somma(R.base.voci[v.id])) + '</td><td class="num">' + fmt(s * R.pv[v.id]) + '</td><td class="num">' + (lato > 0 ? fmtPct(R.pv[v.id] / lato * 100) : "–") + "</td><td>" + rangeTesto(v) + "</td></tr>";
+    h += "<tr><td>" + esc(v.nome || t("(senza nome)")) + "</td><td>" + esc(tipoNome(v.tipo)) + '</td><td class="num">' + fmt(s * somma(R.base.voci[v.id])) + '</td><td class="num">' + spiega(fmt(s * R.pv[v.id]), SPG.pv(v)) + '</td><td class="num">' + (lato > 0 ? spiega(fmtPct(R.pv[v.id] / lato * 100), [tf("Peso = valore attuale della voce ÷ valore attuale di tutti i {0}", v.tipo === "ben" ? t("benefici") : t("costi")), fmt(R.pv[v.id]) + " ÷ " + fmt(lato) + " = " + fmtPct(R.pv[v.id] / lato * 100)]) : "–") + "</td><td>" + rangeTesto(v) + "</td></tr>";
   });
   return h + "</tbody></table></div>";
 }
@@ -1588,14 +1652,14 @@ function renderResponso() {
   let h = bannerEsempio();
   h += '<div class="verdict ' + vd.stato + '"><div class="k">' + esc(vd.k) + '</div><div class="v">' + esc(vd.v) + "</div>" + (vd.p ? "<p>" + esc(vd.p) + "</p>" : "") + "</div>";
   const critDisc = P.criterio !== "simple";
-  const kp = (n, u, l, crit) => '<div class="kpi"><div class="n">' + n + (u ? " <small>" + esc(u) + "</small>" : "") + '</div><div class="l">' + esc(l) + "</div>" + (crit ? '<div class="s">' + tag("t-info", t("criterio di approvazione")) + "</div>" : "") + "</div>";
+  const kp = (n, u, l, crit, sp) => '<div class="kpi"><div class="n">' + (sp ? spiega(n, sp) : n) + (u ? " <small>" + esc(u) + "</small>" : "") + '</div><div class="l">' + esc(l) + "</div>" + (crit ? '<div class="s">' + tag("t-info", t("criterio di approvazione")) + "</div>" : "") + "</div>";
   h += '<div class="kpis">' +
-    kp(fmt(k.van), val(), tf("VAN al {0}", fmtPct(nz(P.tasso), decimali(nz(P.tasso))))) +
-    kp(fmtPb(k.pbDisc), k.pbDisc != null ? t("anni") : "", t("Payback attualizzato"), critDisc && nz(P.pbMax) > 0) +
-    kp(fmtPb(k.pbSimple), k.pbSimple != null ? t("anni") : "", t("Payback semplice"), !critDisc && nz(P.pbMax) > 0) +
-    kp(k.tir == null ? "–" : fmtPct(k.tir * 100), "", t("TIR, il rendimento del progetto")) +
-    kp(fmt(somma(k.ben)), "", tf("Benefici in {0} anni", NY)) +
-    kp(fmt(somma(k.out)), "", t("Cash out totale")) + "</div>";
+    kp(fmt(k.van), val(), tf("VAN al {0}", fmtPct(nz(P.tasso), decimali(nz(P.tasso)))), false, SPG.van(k)) +
+    kp(fmtPb(k.pbDisc), k.pbDisc != null ? t("anni") : "", t("Payback attualizzato"), critDisc && nz(P.pbMax) > 0, SPG.pb(k.disc, k.accDisc, t("Payback attualizzato"))) +
+    kp(fmtPb(k.pbSimple), k.pbSimple != null ? t("anni") : "", t("Payback semplice"), !critDisc && nz(P.pbMax) > 0, SPG.pb(k.net, k.acc, t("Payback semplice"))) +
+    kp(k.tir == null ? "–" : fmtPct(k.tir * 100), "", t("TIR, il rendimento del progetto"), false, SPG.tir(k)) +
+    kp(fmt(somma(k.ben)), "", tf("Benefici in {0} anni", NY), false, SPG.serie(t("Benefici anno per anno"), k.ben)) +
+    kp(fmt(somma(k.out)), "", t("Cash out totale"), false, [t("Cash out = CAPEX + OPEX"), tf("CAPEX {0} + OPEX {1}", fmt(somma(k.capex)), fmt(somma(k.opex))), "= " + fmt(somma(k.out))]) + "</div>";
   h += '<div class="panel"><h2>' + esc(t("Flussi di cassa")) + '</h2><p class="hint">' + esc(t("Il payback si conta dall'inizio del primo anno: è il punto in cui il cumulato torna a zero.")) + "</p>" + legendaFlussi() + segnaposto("flussi") +
     '<div style="margin-top:16px">' + tabellaFlussi(k) + "</div></div>";
   h += '<div class="panel"><h2>' + esc(t("Cosa regge il risultato")) + '</h2><p class="hint">' + esc(t("Il peso è calcolato sul valore attuale. Le voci in cima sono quelle da validare meglio.")) + "</p>" + (S.voci.length ? tabellaPesi() : '<p class="empty">' + esc(t("Ancora nessuna voce.")) + "</p>") + "</div>";
@@ -1622,7 +1686,12 @@ function cellaSoglia(vr, s, quale, hi) {
 function tabellaTornado() {
   let h = '<div class="scroller"><table><thead><tr><th>' + esc(t("Variabile")) + "</th><th>" + esc(t("Range testato")) + '</th><th class="num">' + esc(t("VAN sfavorevole")) + '</th><th class="num">' + esc(t("VAN favorevole")) + '</th><th class="num">' + esc(t("Oscillazione")) + '</th><th class="num">' + esc(t("Payback sfavorevole")) + '</th><th class="num">' + esc(t("Payback favorevole")) + "</th><th>" + esc(t("Esito")) + "</th></tr></thead><tbody>";
   R.tornado.slice().sort((a, b) => Math.abs(b.u.van - b.f.van) - Math.abs(a.u.van - a.f.van)).forEach(x => {
-    h += "<tr><td>" + esc(nomeVar(x.v)) + "</td><td>" + esc(rangeVar(x.v)) + '</td><td class="num">' + fmt(x.u.van) + '</td><td class="num">' + fmt(x.f.van) + '</td><td class="num">' + fmt(Math.abs(x.u.van - x.f.van)) + '</td><td class="num">' + fmtPb(x.u.pb) + '</td><td class="num">' + fmtPb(x.f.pb) + "</td><td>" + (x.regge ? tag("t-ok", t("regge")) : tag("t-bad", t("non regge"))) + "</td></tr>";
+    const rg = rangeVar(x.v).split(" / "), nm = nomeVar(x.v);
+    h += "<tr><td>" + esc(nm) + "</td><td>" + esc(rangeVar(x.v)) + '</td><td class="num">' + spiega(fmt(x.u.van), [tf("VAN con «{0}» all'estremo sfavorevole ({1}), tutto il resto al valore base", nm, rg[0])].concat(SPG.van(x.u).slice(2)))
+      + '</td><td class="num">' + spiega(fmt(x.f.van), [tf("VAN con «{0}» all'estremo favorevole ({1}), tutto il resto al valore base", nm, rg[1] || rg[0])].concat(SPG.van(x.f).slice(2)))
+      + '</td><td class="num">' + spiega(fmt(Math.abs(x.u.van - x.f.van)), [t("Oscillazione = distanza fra VAN favorevole e sfavorevole"), "|" + fmt(x.u.van) + " − " + fmt(x.f.van) + "| = " + fmt(Math.abs(x.u.van - x.f.van))])
+      + '</td><td class="num">' + spiega(fmtPb(x.u.pb), S.proj.criterio === "simple" ? SPG.pb(x.u.net, x.u.acc, t("Payback sfavorevole")) : SPG.pb(x.u.disc, x.u.accDisc, t("Payback sfavorevole")))
+      + '</td><td class="num">' + spiega(fmtPb(x.f.pb), S.proj.criterio === "simple" ? SPG.pb(x.f.net, x.f.acc, t("Payback favorevole")) : SPG.pb(x.f.disc, x.f.accDisc, t("Payback favorevole"))) + "</td><td>" + (x.regge ? tag("t-ok", t("regge")) : tag("t-bad", t("non regge"))) + "</td></tr>";
   });
   return h + "</tbody></table></div>";
 }
@@ -1652,7 +1721,9 @@ function tabellaScenari(sola) {
       if (sc.fisso || sola) h += "<td>" + esc(nomi[lv]) + "</td>";
       else h += '<td><select id="sc-' + sc.id + "-" + j + '" data-c="scenLiv" data-sid="' + sc.id + '" data-vid="' + esc(vr.id) + '">' + LIV().map(o => '<option value="' + o[0] + '"' + (o[0] === lv ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select></td>";
     });
-    h += '<td class="num">' + fmt(sc.k.van) + '</td><td class="num">' + fmtPb(sc.k.pb) + "</td><td>" + (sc.esito.ok ? tag("t-ok", t("rispetta i criteri")) : tag("t-bad", t("non li rispetta"))) + "</td>";
+    const comp = R.vars.filter(vr => (sc.livelli[vr.id] || "b") !== "b").map(vr => "  " + nomeVar(vr) + ": " + nomi[sc.livelli[vr.id]]);
+    h += '<td class="num">' + spiega(fmt(sc.k.van), [t("VAN dello scenario, con le variabili ai livelli scelti")].concat(comp.length ? comp : ["  " + t("Tutte le variabili al valore base")]).concat(SPG.van(sc.k).slice(2)))
+      + '</td><td class="num">' + spiega(fmtPb(sc.k.pb), S.proj.criterio === "simple" ? SPG.pb(sc.k.net, sc.k.acc, t("Payback")) : SPG.pb(sc.k.disc, sc.k.accDisc, t("Payback"))) + "</td><td>" + (sc.esito.ok ? tag("t-ok", t("rispetta i criteri")) : tag("t-bad", t("non li rispetta"))) + "</td>";
     if (!sola) h += '<td class="tools">' + (sc.fisso ? "" : '<button class="danger" data-a="scenDel" data-arg="' + sc.id + '" aria-label="' + esc(t("Elimina lo scenario")) + '">✕</button>') + "</td>";
     h += "</tr>";
   });
