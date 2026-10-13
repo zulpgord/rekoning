@@ -2720,14 +2720,20 @@ avvia();
     $("kwStage").innerHTML = `<div class="kw-scene">${mascot()}<div class="kw-vis"><p class="kw-title">${s.title}</p>${s.vis}</div><div class="kw-bubble">${s.say}</div></div>`;
     [...$("kwDots").children].forEach((d, j) => d.classList.toggle("on", j === idx));
     posa = ""; setPose(s.pose[0][0]);
-    t0 = performance.now();
+    t0 = performance.now(); fine = 0;
     speak();
   }
   /* con la voce la scena dura quanto il suo audio, senza dura in base alla lunghezza del testo */
-  const durata = () => voce() && audio.duration ? audio.duration * 1000 + 600 : Math.max(DUR, SCENES[idx].say.length * (lang === "zh" ? 200 : 55));
+  /* alcuni browser (Firefox) non danno una durata valida per l'audio incorporato: allora si stima
+     dal testo, e quando la voce finisce si passa comunque alla scena dopo */
+  const stima = () => Math.max(DUR, SCENES[idx].say.length * (lang === "zh" ? 200 : 55));
+  const durata = () => voce() && isFinite(audio.duration) && audio.duration > 0 ? audio.duration * 1000 + 600 : stima();
+  let fine = 0;
+  audio.addEventListener("ended", () => { fine = performance.now(); });
   function tick(now) {
     if (!playing) return;
     muovi();
+    if (fine && voce() && now - fine >= 600) { fine = 0; if (idx === SCENES.length - 1) { setPlay(false); return; } show(idx + 1); raf = requestAnimationFrame(tick); return; }
     const p = Math.min(1, (now - t0) / durata());
     $("kwProg").style.width = ((idx + p) / SCENES.length * 100) + "%";
     setPose(posaAl(p));
