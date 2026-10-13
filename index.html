@@ -178,6 +178,12 @@ td.neg{color:var(--bad-fg)}
 button.link.del{color:var(--bad-fg)}
 .matrix td.yr .calc{display:block;font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums;padding:2px 6px 0 0;white-space:nowrap}
 .matrix th.yr{text-align:right;padding-right:14px}
+.matrix select.unitsel{display:block;font-size:12px;padding:4px 6px;margin-bottom:4px;max-width:120px}
+.segno{display:inline-block;min-width:22px;text-align:center;border-radius:6px;font-size:.8em;padding:0 6px;margin-left:6px;color:#fff}
+.segno.pos{background:var(--c-fav)}.segno.neg{background:var(--c-unfav)}
+.sez{display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:18px;align-items:start}
+.sez .chart svg{min-width:0}
+@media (max-width:1100px){.sez{grid-template-columns:minmax(0,1fr)}}
 .matrix tr.det > td{position:static;background:var(--panel-2);padding:16px 18px;border-bottom:1px solid var(--border)}
 .matrix tr.det:hover{background:none}
 .matrix tr.open > td{border-bottom-color:transparent}
@@ -392,7 +398,7 @@ function nuovaVoce(tipo) {
   return {
     id: uid(), tipo: tipo, nome: "",
     cat: tipo === "capex" ? CAT_CAPEX[1] : tipo === "opex" ? CAT_OPEX[4] : "",
-    modo: "man", val: zeri(), qta: zeri(), unitVal: 0, unita: "",
+    modo: "man", val: zeri(), qta: zeri(), unitVal: 0, unita: "", unitTipo: "euro", calcolo: "",
     ins: { spesa: 0, quota: 100, materiali: 0, ore: 0, tariffa: 0, altro: 0, rampa: zeri() },
     fonte: "", certezza: "stima", sfav: 0, fav: 0, gruppo: "", note: ""
   };
@@ -431,6 +437,8 @@ function migrate(o) {
     if (["ben", "capex", "opex"].indexOf(n.tipo) < 0) n.tipo = "ben";
     if (["man", "driver", "ins"].indexOf(n.modo) < 0) n.modo = "man";
     if (n.modo === "ins" && n.tipo !== "ben") n.modo = "man";
+    if (["ora", "euro"].indexOf(n.unitTipo) < 0) n.unitTipo = "euro";
+    n.calcolo = n.calcolo == null ? "" : String(n.calcolo);
     n.val = serie(n.val); n.qta = serie(n.qta);
     n.ins = Object.assign(nuovaVoce("ben").ins, v.ins || {}); n.ins.rampa = serie(n.ins.rampa);
     return n;
@@ -850,6 +858,15 @@ const EN = {
   "Voce": "Item",
   "Come la inserisci": "How you enter it",
   "Valore unitario": "Unit value",
+  "– importi": "– amounts",
+  "Costo orario": "Hourly cost",
+  "Valore € imposto": "Fixed € value",
+  "Ragionamento e calcolo": "Reasoning and calculation",
+  "Spiega come sei arrivato all'importo: ipotesi, passaggi e conti fatti.": "Explain how you got to the amount: assumptions, steps and calculations.",
+  "Es. 2 operatori × 1.600 h/anno × 35 €/h = 112.000 €": "E.g. 2 operators × 1,600 h/yr × 35 €/h = 112,000 €",
+  "Progressione per anno": "Progression by year",
+  "Totale dell'anno": "Year total",
+  "Cumulato": "Cumulative",
   "Totale": "Total",
   "Ancora nessuna voce.": "No items yet.",
   "Benefici": "Benefits",
@@ -1422,15 +1439,52 @@ function legendaFlussi() {
   return '<div class="legend"><span><i class="swatch" style="background:var(--c-bar)"></i>' + esc(t("Flusso netto annuo")) + '</span><span><i class="swatch line" style="background:var(--c-line)"></i>' + esc(t("Cumulato attualizzato")) + "</span></div>";
 }
 
+/* importo con il segno del flusso: + i benefici, − CAPEX e OPEX */
+function firmato(n, tipo) { return n ? (tipo === "ben" ? "+" : "−") + fmt(Math.abs(n)) : fmt(0); }
+/* progressione di una sezione: barre = totale dell'anno col segno del flusso, linea = cumulato */
+function grafSezione(tipo, W) {
+  const k = R.base, s0 = tipo === "ben" ? 1 : -1, serie = (tipo === "ben" ? k.ben : tipo === "capex" ? k.capex : k.opex).map(x => s0 * x);
+  const cum = []; let c = 0; serie.forEach(x => { c += x; cum.push(c); });
+  const H = 240, l = 58, r = 10, top = 16, bot = 26;
+  let lo = 0, hi = 0;
+  for (let i = 0; i < NY; i++) { lo = Math.min(lo, serie[i], cum[i]); hi = Math.max(hi, serie[i], cum[i]); }
+  if (hi - lo < 1e-9) { if (s0 > 0) hi = lo + 1; else lo = hi - 1; }
+  const st = passo(hi - lo, 4);
+  lo = Math.floor(lo / st) * st; hi = Math.ceil(hi / st) * st;
+  const band = (W - l - r) / NY, y = v => top + (hi - v) / (hi - lo) * (H - top - bot), cx = i => l + (i + 0.5) * band;
+  const bw = Math.min(20, band * 0.55), col = s0 > 0 ? "var(--c-fav)" : "var(--c-unfav)";
+  let s = '<svg viewBox="0 0 ' + W + " " + H + '" role="img" aria-label="' + esc(t("Progressione per anno")) + '" font-size="11">';
+  for (let v = lo; v <= hi + st / 2; v += st) {
+    s += '<line x1="' + l + '" x2="' + (W - r) + '" y1="' + y(v) + '" y2="' + y(v) + '" stroke="' + (Math.abs(v) < st / 1e6 ? "var(--c-axis)" : "var(--c-grid)") + '" stroke-width="1"/>';
+    s += '<text x="' + (l - 6) + '" y="' + (y(v) + 4) + '" text-anchor="end" fill="var(--dim)">' + esc(fmtC(Math.abs(v) < st / 1e6 ? 0 : v)) + "</text>";
+  }
+  for (let i = 0; i < NY; i++) {
+    if (serie[i] !== 0) s += '<path d="' + barraV(cx(i) - bw / 2, bw, y(0), y(serie[i])) + '" fill="' + col + '" opacity=".85"/>';
+    if (band >= 40 || i % 2 === 0) s += '<text x="' + cx(i) + '" y="' + (H - 8) + '" text-anchor="middle" fill="var(--dim)">' + (band >= 40 ? anni(i) : "'" + String(anni(i)).slice(2)) + "</text>";
+  }
+  let d = "";
+  for (let i = 0; i < NY; i++) d += (i ? "L" : "M") + cx(i) + " " + y(cum[i]);
+  s += '<path d="' + d + '" fill="none" stroke="var(--c-line)" stroke-width="2" stroke-linejoin="round"/>';
+  for (let i = 0; i < NY; i++) {
+    s += '<circle cx="' + cx(i) + '" cy="' + y(cum[i]) + '" r="3" fill="var(--c-line)"/>';
+    const tip = anni(i) + "\n" + t("Anno") + ": " + firmato(Math.abs(serie[i]), tipo) + "\n" + t("Cumulato") + ": " + firmato(Math.abs(cum[i]), tipo);
+    s += '<rect class="hit" tabindex="0" x="' + (l + i * band) + '" y="' + top + '" width="' + band + '" height="' + (H - top - bot) + '" data-tip="' + esc(tip) + '"/>';
+  }
+  return s + "</svg>";
+}
+function legendaSezione(tipo) {
+  return '<div class="legend"><span><i class="swatch" style="background:' + (tipo === "ben" ? "var(--c-fav)" : "var(--c-unfav)") + '"></i>' + esc(t("Totale dell'anno")) + '</span><span><i class="swatch line" style="background:var(--c-line)"></i>' + esc(t("Cumulato")) + "</span></div>";
+}
 /* i grafici si disegnano dopo, alla larghezza reale del riquadro: così il testo non viene ingrandito né rimpicciolito */
 function segnaposto(tipo, lingua) { return '<div class="chart" data-g="' + tipo + '"' + (lingua ? ' data-l="' + lingua + '"' : "") + "></div>"; }
 function disegnaGrafici(larghezzaFissa) {
   document.querySelectorAll(".chart[data-g]").forEach(el => {
     const cs = getComputedStyle(el);
     let W = larghezzaFissa && el.closest(".sheet") ? larghezzaFissa : Math.floor(el.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight));
-    W = Math.max(560, Math.min(1400, W || 760));
+    const sez = el.dataset.g.indexOf("sez-") === 0;
+    W = Math.max(sez ? 280 : 560, Math.min(1400, W || 760));
     const prima = TL; TL = el.dataset.l || LANG;
-    try { el.innerHTML = el.dataset.g === "flussi" ? grafFlussi(R.base, W) : grafTornado(el.dataset.g, W); } finally { TL = prima; }
+    try { el.innerHTML = sez ? grafSezione(el.dataset.g.slice(4), W) : el.dataset.g === "flussi" ? grafFlussi(R.base, W) : grafTornado(el.dataset.g, W); } finally { TL = prima; }
   });
 }
 
@@ -1519,16 +1573,20 @@ function rigaVoce(v) {
   const a = R.base.voci[v.id], open = !!UI.open[v.id], id = v.id;
   const arr = v.modo === "driver" ? "qta" : v.modo === "ins" ? "ins.rampa" : "val";
   const src = v.modo === "driver" ? v.qta : v.modo === "ins" ? v.ins.rampa : v.val;
-  let unit = '<span class="sub" style="color:var(--dim)">–</span>';
-  if (v.modo === "driver") unit = numIn("v-" + id + "-u", "voci." + id + ".unitVal", v.unitVal, "short") + '<span class="calc" style="display:block;font-size:11.5px;color:var(--dim);padding-top:2px">' + esc(val() + " / " + (v.unita || t("unità"))) + "</span>";
+  /* il valore unitario si sceglie dalla colonna: importi diretti, costo orario o valore in euro imposto */
+  const scelta = v.modo === "driver" ? v.unitTipo : "man";
+  const sel = '<select class="unitsel" id="v-' + id + '-us" data-p="voci.' + id + '.unitScelta" data-t="s" aria-label="' + esc(t("Valore unitario")) + '">' +
+    [["man", t("– importi")], ["ora", t("Costo orario")], ["euro", t("Valore € imposto")]].map(o => '<option value="' + o[0] + '"' + (o[0] === scelta ? " selected" : "") + ">" + esc(o[1]) + "</option>").join("") + "</select>";
+  let unit = sel;
+  if (v.modo === "driver") unit = sel + numIn("v-" + id + "-u", "voci." + id + ".unitVal", v.unitVal, "short") + '<span class="calc" style="display:block;font-size:11.5px;color:var(--dim);padding-top:2px">' + esc(val() + " / " + (v.unitTipo === "ora" ? "h" : (v.unita || t("unità")))) + "</span>";
   if (v.modo === "ins") unit = '<span style="display:inline-block;max-width:78px;white-space:normal;line-height:1.25;font-size:12.5px;color:var(--dim)">' + esc(t("% del regime")) + "</span>";
   let h = '<tr class="' + (open ? "open" : "") + '"><td>' + txtIn("v-" + id + "-n", "voci." + id + ".nome", v.nome, "nome", v.tipo === "ben" ? t("Nome del beneficio") : t("Nome del costo")) +
     '<div class="rowtools">' + rangeTesto(v) + '<button class="link" data-a="tog" data-arg="' + id + '" aria-expanded="' + open + '">' + esc(open ? t("Chiudi") : t("Dettagli")) + '</button><button class="link del" data-a="del" data-arg="' + id + '">' + esc(t("Elimina")) + "</button></div></td>";
   h += '<td class="num">' + unit + "</td>";
   for (let j = 0; j < NY; j++) {
-    h += '<td class="yr">' + numIn("v-" + id + "-y" + j, "voci." + id + "." + arr + "." + j, src[j], "", true) + (v.modo !== "man" ? '<span class="calc">' + (a[j] ? fmt(a[j]) : "&nbsp;") + "</span>" : "") + "</td>";
+    h += '<td class="yr">' + numIn("v-" + id + "-y" + j, "voci." + id + "." + arr + "." + j, src[j], "", true) + (v.modo !== "man" ? '<span class="calc">' + (a[j] ? firmato(a[j], v.tipo) : "&nbsp;") + "</span>" : "") + "</td>";
   }
-  h += '<td class="num"><b>' + spiega(fmt(somma(a)), SPG.serie(tf("Totale {0} anni", NY) + " · " + (v.nome || t("(senza nome)")), a)) + "</b></td></tr>";
+  h += '<td class="num"><b>' + spiega(firmato(somma(a), v.tipo), SPG.serie(tf("Totale {0} anni", NY) + " · " + (v.nome || t("(senza nome)")), a)) + "</b></td></tr>";
   if (open) h += '<tr class="det"><td colspan="' + (NY + 3) + '">' + dettaglioVoce(v) + "</td></tr>";
   return h;
 }
@@ -1555,6 +1613,7 @@ function dettaglioVoce(v) {
   h += campo(t("Fonte del dato"), "v-" + id + "-f", txtIn("v-" + id + "-f", b + "fonte", v.fonte, "", t("Preventivo, misura, calcolo, ipotesi…")), "span2") +
     campo(t("Certezza del dato"), "v-" + id + "-ce", selIn("v-" + id + "-ce", b + "certezza", v.certezza, [["preventivo", t("Preventivo o contratto")], ["misurato", t("Misurato sul campo")], ["stima", t("Stima")], ["ipotesi", t("Ipotesi")]])) +
     campo(t("Note"), "v-" + id + "-no", txtIn("v-" + id + "-no", b + "note", v.note), "span2") + "</div></div>";
+  h += "<div><h3>" + esc(t("Ragionamento e calcolo")) + '</h3><p class="hint">' + esc(t("Spiega come sei arrivato all'importo: ipotesi, passaggi e conti fatti.")) + '</p><textarea id="v-' + id + '-rc" data-p="' + b + 'calcolo" data-t="s" placeholder="' + esc(t("Es. 2 operatori × 1.600 h/anno × 35 €/h = 112.000 €")) + '">' + esc(v.calcolo) + "</textarea></div>";
   const sg = CERTEZZE[v.certezza] || CERTEZZE.stima, su = v.tipo === "ben" ? -sg[0] : sg[0], sf = v.tipo === "ben" ? sg[1] : -sg[1];
   h += "<div><h3>" + esc(t("Range di rischio")) + '</h3><p class="hint">' + esc(v.tipo === "ben" ?
     t("Di quanto può sbagliare questa voce, in percentuale dell'importo. Per un beneficio l'estremo sfavorevole è negativo. Le voci con lo stesso gruppo si muovono insieme, come un'unica variabile.") :
@@ -1579,17 +1638,19 @@ function dettaglioVoce(v) {
 function tabellaVoci(tipo, titolo, aiuto, btn, totale) {
   const lista = S.voci.filter(v => v.tipo === tipo);
   const tot = tipo === "ben" ? R.base.ben : tipo === "capex" ? R.base.capex : R.base.opex;
-  let h = '<div class="panel"><h2>' + esc(titolo) + '</h2><p class="hint">' + esc(aiuto) + "</p>";
+  let h = '<div class="panel"><h2>' + esc(titolo) + ' <span class="segno ' + (tipo === "ben" ? "pos" : "neg") + '">' + (tipo === "ben" ? "+" : "−") + '</span></h2><p class="hint">' + esc(aiuto) + "</p>";
+  h += '<div class="sez"><div style="min-width:0">';
   if (lista.length) {
     h += '<div class="scroller"><table class="matrix"><thead><tr><th>' + esc(t("Voce")) + '</th><th class="num wrap">' + esc(t("Valore unitario")) + "</th>";
     for (let j = 0; j < NY; j++) h += '<th class="yr">' + anni(j) + "</th>";
     h += '<th class="num">' + esc(t("Totale")) + "</th></tr></thead><tbody>";
     lista.forEach(v => { h += rigaVoce(v); });
     h += "</tbody><tfoot><tr><td>" + esc(totale) + "</td><td></td>";
-    for (let j = 0; j < NY; j++) h += '<td class="num">' + (tot[j] ? fmt(tot[j]) : "") + "</td>";
-    h += '<td class="num">' + fmt(somma(tot)) + "</td></tr></tfoot></table></div>";
+    for (let j = 0; j < NY; j++) h += '<td class="num">' + (tot[j] ? firmato(tot[j], tipo) : "") + "</td>";
+    h += '<td class="num">' + firmato(somma(tot), tipo) + "</td></tr></tfoot></table></div>";
   } else h += '<p class="empty">' + esc(t("Ancora nessuna voce.")) + "</p>";
   h += '<div class="row-actions"><button class="act" data-a="add" data-arg="' + tipo + '">' + esc(btn) + "</button></div></div>";
+  h += "<div>" + segnaposto("sez-" + tipo) + legendaSezione(tipo) + "</div></div></div>";
   return h;
 }
 function renderVoci() {
@@ -2171,6 +2232,12 @@ function cambia(el) {
   } else if (tipo === "b") v = el.checked;
   else v = el.value;
   el.classList.remove("bad");
+  const us = /^voci\.(\w+)\.unitScelta$/.exec(el.dataset.p);
+  if (us) {
+    const vc = S.voci.find(x => x.id === us[1]); if (!vc) return;
+    if (v === "man") vc.modo = "man"; else { vc.modo = "driver"; vc.unitTipo = v; if (v === "ora") vc.unita = "h"; }
+    accodaSalva(); refresh(); return;
+  }
   scrivi(el.dataset.p, v);
   if (el.dataset.p.indexOf("ui.") !== 0) accodaSalva();
   rinfrescaPresto();
