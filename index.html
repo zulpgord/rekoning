@@ -296,6 +296,17 @@ footer.foot{border-top:1px solid var(--border-2);background:var(--panel);margin-
 .sheet .rk div{border:1px solid var(--border);border-radius:4px;padding:8px 12px}
 .sheet .rk b{display:block;font-family:var(--f-display);font-size:17px;font-variant-numeric:tabular-nums}
 .sheet .rk span{color:var(--dim);font-size:12px}
+.sheet .scheda{border:1px solid var(--border);border-radius:4px;padding:10px 14px;margin:10px 0;break-inside:avoid}
+.sheet .scheda h3{font-size:13.5px;font-weight:700;margin:0 0 4px}
+.sheet .scheda table.anni{font-size:11px;margin:6px 0}
+.sheet .scheda table.anni th,.sheet .scheda table.anni td{padding:3px 5px}
+.sheet .testo{white-space:pre-wrap}
+.sheet .allegati-rep{break-before:page}
+.sheet .alleg{margin-bottom:18px}
+.sheet .alleg .cap{font-size:12.5px;margin-bottom:6px}
+.sheet .alleg img{display:block;max-width:100%;max-height:250mm;margin:0 auto 10px;border:1px solid var(--border);break-inside:avoid}
+.allist{list-style:none;padding:0;margin:0 0 10px}
+.allist li{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:5px 0;border-bottom:1px solid var(--border-2)}
 .sheet .chart{border:none;padding:0;background:none;margin-top:6px;--input:#FFFFFF;overflow:visible}
 .sheet .scroller{overflow:visible;margin:0;padding:0}
 .sheet .matrix th:first-child,.sheet .matrix td:first-child{position:static;background:none}
@@ -496,6 +507,7 @@ footer.foot{border-top:1px solid var(--border-2);background:var(--panel);margin-
 <div id="tip" hidden></div>
 <div id="modal" hidden></div>
 <input type="file" id="importFile" accept=".json,application/json" hidden>
+<input type="file" id="allegaFile" accept="image/*,application/pdf,.pdf" multiple hidden>
 <script>
 /* ============================================================
    MOTORE DI CALCOLO
@@ -525,7 +537,7 @@ function nuovaVoce(tipo) {
   return {
     id: uid(), tipo: tipo, nome: "",
     cat: tipo === "capex" ? CAT_CAPEX[1] : tipo === "opex" ? CAT_OPEX[4] : "",
-    modo: "man", val: zeri(), qta: zeri(), unitVal: 0, unita: "", unitTipo: "euro", calcolo: "",
+    modo: "man", val: zeri(), qta: zeri(), unitVal: 0, unita: "", unitTipo: "euro", calcolo: "", allegati: [],
     ins: { spesa: 0, quota: 100, materiali: 0, ore: 0, tariffa: 0, altro: 0, rampa: zeri() },
     fonte: "", certezza: "stima", sfav: 0, fav: 0, gruppo: "", note: ""
   };
@@ -566,6 +578,7 @@ function migrate(o) {
     if (n.modo === "ins" && n.tipo !== "ben") n.modo = "man";
     if (["ora", "euro"].indexOf(n.unitTipo) < 0) n.unitTipo = "euro";
     n.calcolo = n.calcolo == null ? "" : String(n.calcolo);
+    n.allegati = Array.isArray(n.allegati) ? n.allegati.filter(a => a && a.id) : [];
     n.val = serie(n.val); n.qta = serie(n.qta);
     n.ins = Object.assign(nuovaVoce("ben").ins, v.ins || {}); n.ins.rampa = serie(n.ins.rampa);
     return n;
@@ -989,6 +1002,28 @@ const EN = {
   "Costo orario": "Hourly cost",
   "Valore € imposto": "Fixed € value",
   "Ragionamento e calcolo": "Reasoning and calculation",
+  "Allegati a supporto": "Supporting files",
+  "Immagini o PDF a sostegno della voce (preventivi, misure, calcoli): vengono stampati in fondo al report.": "Images or PDFs backing the item (quotes, measurements, calculations): they are printed at the end of the report.",
+  "{0} pag.": "{0} p.",
+  "pagine non presenti in questo browser": "pages not in this browser",
+  "Rimuovi": "Remove",
+  "Allega file": "Attach file",
+  "{0}: allega un'immagine o un PDF": "{0}: attach an image or a PDF",
+  "Preparo {0}…": "Preparing {0}…",
+  "Allegato non salvato nel browser: usa Esporta file per conservarlo": "Attachment not saved in the browser: use Export file to keep it",
+  "{0}: file non leggibile": "{0}: file cannot be read",
+  "per i PDF serve la connessione a internet": "PDFs need an internet connection",
+  "Come sono stati calcolati i benefici": "How the benefits were calculated",
+  "Come sono stati stimati i costi": "How the costs were estimated",
+  "Allegati": "Attachments",
+  "Pagine non presenti in questo browser: importa il file del progetto che le contiene.": "Pages not in this browser: import the project file that contains them.",
+  "Ore × costo orario di {0} {1}/h.": "Hours × hourly cost of {0} {1}/h.",
+  "Quantità × valore imposto di {0} {1} per {2}.": "Quantity × fixed value of {0} {1} per {2}.",
+  "Insourcing: spesa evitata {0} − costo interno {1} = {2} a regime, per la percentuale di regime di ogni anno.": "Insourcing: spend avoided {0} − in-house cost {1} = {2} at full run-rate, times each year's share of run-rate.",
+  "Importi inseriti anno per anno.": "Amounts entered year by year.",
+  "Ore": "Hours",
+  "Quantità": "Quantity",
+  "Importo": "Amount",
   "Spiega come sei arrivato all'importo: ipotesi, passaggi e conti fatti.": "Explain how you got to the amount: assumptions, steps and calculations.",
   "Es. 2 operatori × 1.600 h/anno × 35 €/h = 112.000 €": "E.g. 2 operators × 1,600 h/yr × 35 €/h = 112,000 €",
   "Progressione per anno": "Progression by year",
@@ -1331,7 +1366,7 @@ const EN = {
 /* ============================================================
    VERSIONE / LINGUA / TEMA / STATO
    ============================================================ */
-const VERSION = "v1.4";
+const VERSION = "v1.5";
 const KEY = "reckoning:state:v1";
 let LANG = "it";      /* lingua dell'interfaccia */
 let TL = "it";        /* lingua in cui si sta scrivendo adesso (il report può averne una sua) */
@@ -1741,6 +1776,10 @@ function dettaglioVoce(v) {
     campo(t("Certezza del dato"), "v-" + id + "-ce", selIn("v-" + id + "-ce", b + "certezza", v.certezza, [["preventivo", t("Preventivo o contratto")], ["misurato", t("Misurato sul campo")], ["stima", t("Stima")], ["ipotesi", t("Ipotesi")]])) +
     campo(t("Note"), "v-" + id + "-no", txtIn("v-" + id + "-no", b + "note", v.note), "span2") + "</div></div>";
   h += "<div><h3>" + esc(t("Ragionamento e calcolo")) + '</h3><p class="hint">' + esc(t("Spiega come sei arrivato all'importo: ipotesi, passaggi e conti fatti.")) + '</p><textarea id="v-' + id + '-rc" data-p="' + b + 'calcolo" data-t="s" placeholder="' + esc(t("Es. 2 operatori × 1.600 h/anno × 35 €/h = 112.000 €")) + '">' + esc(v.calcolo) + "</textarea></div>";
+  const al = v.allegati || [];
+  h += "<div><h3>" + esc(t("Allegati a supporto")) + '</h3><p class="hint">' + esc(t("Immagini o PDF a sostegno della voce (preventivi, misure, calcoli): vengono stampati in fondo al report.")) + "</p>" +
+    (al.length ? '<ul class="allist">' + al.map(a => '<li><span>📎 ' + esc(a.nome) + ' <span class="sub">· ' + esc(tf("{0} pag.", a.pagine)) + (ALL[a.id] ? "" : " · " + esc(t("pagine non presenti in questo browser"))) + '</span></span><button class="link del" data-a="delall" data-arg="' + id + ":" + a.id + '">' + esc(t("Rimuovi")) + "</button></li>").join("") + "</ul>" : "") +
+    '<button class="act ghost small" data-a="allega" data-arg="' + id + '">' + esc(t("Allega file")) + "</button></div>";
   const sg = CERTEZZE[v.certezza] || CERTEZZE.stima, su = v.tipo === "ben" ? -sg[0] : sg[0], sf = v.tipo === "ben" ? sg[1] : -sg[1];
   h += "<div><h3>" + esc(t("Range di rischio")) + '</h3><p class="hint">' + esc(v.tipo === "ben" ?
     t("Di quanto può sbagliare questa voce, in percentuale dell'importo. Per un beneficio l'estremo sfavorevole è negativo. Le voci con lo stesso gruppo si muovono insieme, come un'unica variabile.") :
@@ -2051,6 +2090,27 @@ function renderVersioni() {
 }
 
 /* ---------- report ---------- */
+/* scheda di una voce nel report: metodo, importi anno per anno, ragionamento, fonte, note e allegati */
+function schedaVoce(v, nAll) {
+  const k = R.base, a = k.voci[v.id], cert = { preventivo: t("Preventivo o contratto"), misurato: t("Misurato sul campo"), stima: t("Stima"), ipotesi: t("Ipotesi") };
+  let metodo, riga = null;
+  if (v.modo === "driver" && v.unitTipo === "ora") { metodo = tf("Ore × costo orario di {0} {1}/h.", fmtAuto(nz(v.unitVal)), val()); riga = [t("Ore"), v.qta]; }
+  else if (v.modo === "driver") { metodo = tf("Quantità × valore imposto di {0} {1} per {2}.", fmtAuto(nz(v.unitVal)), val(), v.unita || t("unità")); riga = [t("Quantità"), v.qta]; }
+  else if (v.modo === "ins") { const n = insNetto(v); metodo = tf("Insourcing: spesa evitata {0} − costo interno {1} = {2} a regime, per la percentuale di regime di ogni anno.", fmt(n.evitata), fmt(n.interno), fmt(n.netto)); riga = [t("% del regime"), v.ins.rampa]; }
+  else metodo = t("Importi inseriti anno per anno.");
+  let h = '<div class="scheda"><h3>' + esc(v.nome || t("(senza nome)")) + ' <span class="small">· ' + esc(tipoNome(v.tipo)) + " · " + esc(tf("Totale {0} anni", NY)) + " " + firmato(somma(a), v.tipo) + " · " + esc(t("valore attuale")) + " " + firmato(R.pv[v.id], v.tipo) + "</span></h3>";
+  h += "<p><b>" + esc(t("Metodo")) + ".</b> " + esc(metodo) + "</p>";
+  h += '<table class="anni"><thead><tr><th></th>';
+  for (let j = 0; j < NY; j++) h += '<th class="num">' + anni(j) + "</th>";
+  h += "</tr></thead><tbody>";
+  if (riga) { h += "<tr><td>" + esc(riga[0]) + "</td>"; for (let j = 0; j < NY; j++) h += '<td class="num">' + (nz(riga[1][j]) ? fmtAuto(nz(riga[1][j])) : "") + "</td>"; h += "</tr>"; }
+  h += "<tr><td>" + esc(t("Importo")) + "</td>"; for (let j = 0; j < NY; j++) h += '<td class="num">' + (a[j] ? firmato(a[j], v.tipo) : "") + "</td>"; h += "</tr></tbody></table>";
+  if ((v.calcolo || "").trim()) h += '<p><b>' + esc(t("Ragionamento e calcolo")) + '.</b></p><p class="testo">' + esc(v.calcolo) + "</p>";
+  h += "<p><b>" + esc(t("Fonte del dato")) + ".</b> " + esc(v.fonte || "–") + " · " + esc(t("Certezza del dato")) + ": " + esc(cert[v.certezza] || "–") + "</p>";
+  if ((v.note || "").trim()) h += "<p><b>" + esc(t("Note")) + ".</b> " + esc(v.note) + "</p>";
+  if ((v.allegati || []).length) h += "<p><b>" + esc(t("Allegati")) + ".</b> " + v.allegati.map(x => { nAll.push([v, x]); return "A" + nAll.length + " " + esc(x.nome); }).join(" · ") + "</p>";
+  return h + "</div>";
+}
 function foglio() {
   const P = S.proj, k = R.base, vd = testoVerdetto(), pbMax = nz(P.pbMax);
   const oggi = new Date(), p2 = n => String(n).padStart(2, "0");
@@ -2080,6 +2140,13 @@ function foglio() {
   if (gen.length) h += '<p class="small">' + esc(t("Variabili generali") + ". " + gen.join("; ") + ".") + "</p>";
   h += "</div>";
 
+  /* come è stata costruita ogni voce: tutti i benefici, e i costi documentati */
+  const nAll = []; /* allegati in ordine di citazione: [voce, allegato] */
+  const docum = v => (v.calcolo || "").trim() || (v.note || "").trim() || (v.allegati || []).length;
+  const ben = S.voci.filter(v => v.tipo === "ben"), costi = S.voci.filter(v => v.tipo !== "ben" && docum(v));
+  if (ben.length) h += '<div class="blk"><h2>' + esc(t("Come sono stati calcolati i benefici")) + "</h2>" + ben.map(v => schedaVoce(v, nAll)).join("") + "</div>";
+  if (costi.length) h += '<div class="blk"><h2>' + esc(t("Come sono stati stimati i costi")) + "</h2>" + costi.map(v => schedaVoce(v, nAll)).join("") + "</div>";
+
   if (R.vars.length) {
     const forte = R.tornado.slice().sort((a, b) => Math.abs(b.u.van - b.f.van) - Math.abs(a.u.van - a.f.van))[0];
     let lo = k.van, hi = k.van; R.tornado.forEach(x => { lo = Math.min(lo, x.u.van, x.f.van); hi = Math.max(hi, x.u.van, x.f.van); });
@@ -2104,8 +2171,18 @@ function foglio() {
     h += "<h2>" + esc(t("Descrizione del caso")) + "</h2>";
     testi.forEach(x => { h += '<p class="blk"><b>' + esc(x[0]) + ".</b> " + esc(x[1]) + "</p>"; });
   }
-  h += '<p class="small" style="margin-top:24px">' + esc(tf("Generato con RECKONING {0}. Stesse regole di calcolo del template CBA: primo anno non scontato, payback contato dall'inizio del primo anno.", VERSION)) + "</p></div>";
-  return h;
+  h += '<p class="small" style="margin-top:24px">' + esc(tf("Generato con RECKONING {0}. Stesse regole di calcolo del template CBA: primo anno non scontato, payback contato dall'inizio del primo anno.", VERSION)) + "</p>";
+  let app = "";
+  if (nAll.length) {
+    app += '<div class="allegati-rep"><h2>' + esc(t("Allegati")) + "</h2>";
+    nAll.forEach((x, i) => {
+      const pg = ALL[x[1].id];
+      app += '<div class="alleg"><p class="cap"><b>A' + (i + 1) + "</b> · " + esc(x[1].nome) + " · " + esc(x[0].nome || t("(senza nome)")) + "</p>" +
+        (pg ? pg.map(u => '<img src="' + u + '" alt="' + esc(x[1].nome) + '">').join("") : '<p class="small">' + esc(t("Pagine non presenti in questo browser: importa il file del progetto che le contiene.")) + "</p>") + "</div>";
+    });
+    app += "</div>";
+  }
+  return h + app + "</div>";
 }
 function renderReport() {
   const rl = UI.rlang || LANG;
@@ -2187,6 +2264,92 @@ function esempio() {
 /* ============================================================
    SALVATAGGIO
    ============================================================ */
+/* ---------- allegati ----------
+   File a sostegno di una voce: immagini e PDF, convertiti in pagine JPEG per poterli stampare nel report.
+   Nel progetto resta solo l'elenco (id, nome, pagine); le pagine stanno in IndexedDB, troppo grandi
+   per lo storage normale, e viaggiano dentro il file esportato. */
+const ALL = {};   /* id allegato -> [data URL delle pagine] */
+const idb = {
+  db: null,
+  apri() {
+    if (this.db) return Promise.resolve(this.db);
+    return new Promise((ok, ko) => {
+      if (typeof indexedDB === "undefined") return ko(new Error("indexedDB"));
+      const r = indexedDB.open("reckoning-allegati", 1);
+      r.onupgradeneeded = () => r.result.createObjectStore("f");
+      r.onsuccess = () => ok(this.db = r.result);
+      r.onerror = () => ko(r.error);
+    });
+  },
+  async op(modo, fn) {
+    const db = await this.apri();
+    return new Promise((ok, ko) => { const tx = db.transaction("f", modo), r = fn(tx.objectStore("f")); tx.oncomplete = () => ok(r && r.result); tx.onerror = () => ko(tx.error); });
+  },
+  put(id, v) { return this.op("readwrite", s => s.put(v, id)); },
+  del(id) { return this.op("readwrite", s => s.delete(id)); },
+  get(id) { return this.op("readonly", s => s.get(id)); }
+};
+/* gli allegati usati dal caso e dalle sue istantanee */
+function idAllegati(o) {
+  const ids = new Set(), vv = l => (l || []).forEach(v => (v.allegati || []).forEach(a => ids.add(a.id)));
+  vv(o.voci); (o.snap || []).forEach(sn => { if (sn.dati) vv(sn.dati.voci); });
+  return ids;
+}
+async function caricaAllegati() {
+  for (const id of idAllegati(S)) if (!ALL[id]) { try { const p = await idb.get(id); if (p) ALL[id] = p; } catch (e) { return; } }
+}
+function caricaScript(url) {
+  return new Promise((ok, ko) => { const s = document.createElement("script"); s.src = url; s.onload = ok; s.onerror = ko; document.head.appendChild(s); });
+}
+/* ridimensiona su fondo bianco e comprime in JPEG: basta per la stampa e tiene piccolo il file */
+function aJpeg(src, w, h) {
+  const k = Math.min(1, 1600 / Math.max(w, h)), c = document.createElement("canvas");
+  c.width = Math.round(w * k); c.height = Math.round(h * k);
+  const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(src, 0, 0, c.width, c.height);
+  return c.toDataURL("image/jpeg", .82);
+}
+function immagine(f) {
+  return new Promise((ok, ko) => {
+    const u = URL.createObjectURL(f), im = new Image();
+    im.onload = () => { try { ok(aJpeg(im, im.naturalWidth, im.naturalHeight)); } catch (e) { ko(e); } URL.revokeObjectURL(u); };
+    im.onerror = () => { URL.revokeObjectURL(u); ko(new Error("img")); };
+    im.src = u;
+  });
+}
+const PDFJS = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+async function pdfPagine(f) {
+  if (!window.pdfjsLib) { await caricaScript(PDFJS + "pdf.min.js"); window.pdfjsLib.GlobalWorkerOptions.workerSrc = PDFJS + "pdf.worker.min.js"; }
+  const doc = await window.pdfjsLib.getDocument({ data: await f.arrayBuffer() }).promise, out = [];
+  for (let i = 1; i <= Math.min(doc.numPages, 40); i++) {
+    const pg = await doc.getPage(i), vp = pg.getViewport({ scale: 1 }), sc = Math.min(2.5, 1500 / vp.width), v2 = pg.getViewport({ scale: sc });
+    const c = document.createElement("canvas"); c.width = Math.round(v2.width); c.height = Math.round(v2.height);
+    await pg.render({ canvasContext: c.getContext("2d"), viewport: v2 }).promise;
+    out.push(aJpeg(c, c.width, c.height));
+  }
+  return out;
+}
+async function allega(idVoce, files) {
+  const v = S.voci.find(x => x.id === idVoce); if (!v) return;
+  for (const f of files) {
+    const pdf = f.type === "application/pdf" || /\.pdf$/i.test(f.name);
+    if (!pdf && !/^image\//.test(f.type)) { flag(tf("{0}: allega un'immagine o un PDF", f.name), true); continue; }
+    flag(tf("Preparo {0}…", f.name));
+    try {
+      const pagine = pdf ? await pdfPagine(f) : [await immagine(f)], id = uid();
+      ALL[id] = pagine;
+      try { await idb.put(id, pagine); } catch (e) { flag(t("Allegato non salvato nel browser: usa Esporta file per conservarlo"), true); }
+      v.allegati.push({ id: id, nome: f.name, pagine: pagine.length });
+    } catch (e) { flag(tf("{0}: file non leggibile", f.name) + (pdf && !window.pdfjsLib ? " · " + t("per i PDF serve la connessione a internet") : ""), true); }
+  }
+  accodaSalva(); refresh();
+}
+function togliAllegato(idVoce, idAll) {
+  const v = S.voci.find(x => x.id === idVoce); if (!v) return;
+  v.allegati = v.allegati.filter(a => a.id !== idAll);
+  if (!idAllegati(S).has(idAll)) { delete ALL[idAll]; idb.del(idAll).catch(() => {}); }
+  accodaSalva(); refresh();
+}
+
 let saveTimer = null;
 /* dentro un artifact di Claude usa il suo storage, altrove quello del browser */
 const store = {
@@ -2398,7 +2561,14 @@ function azione(a, arg) {
     case "snapCmp": UI.cmp = UI.cmp === arg ? null : arg; refresh(); return;
     case "snapDel": { const sn = S.snap.find(x => x.id === arg); if (!sn) return; chiedi(t("Eliminare l'istantanea?"), tf("«{0}» non potrà essere recuperata.", sn.nome), t("Elimina"), () => { S.snap = S.snap.filter(x => x.id !== arg); if (UI.cmp === arg) UI.cmp = null; accodaSalva(); refresh(); }); return; }
     case "snapRip": { const sn = S.snap.find(x => x.id === arg); if (!sn) return; chiedi(t("Ripristinare l'istantanea?"), tf("Il caso attuale verrà sostituito da «{0}». Le modifiche non salvate in un'istantanea andranno perse.", sn.nome), t("Ripristina"), () => { const d = clona(sn.dati); S.proj = d.proj; S.voci = d.voci; S.sens = d.sens; migrate(S); accodaSalva(); refresh(); }); return; }
-    case "esporta": S.meta.lang = LANG; S.meta.theme = THEME; S.meta.version = VERSION; scarica(nomeFile("json"), JSON.stringify(S, null, 2), "application/json"); return;
+    case "esporta": {
+      S.meta.lang = LANG; S.meta.theme = THEME; S.meta.version = VERSION;
+      const dati = {}; idAllegati(S).forEach(id => { if (ALL[id]) dati[id] = ALL[id]; });
+      const o = Object.keys(dati).length ? Object.assign({}, S, { allegatiDati: dati }) : S;
+      scarica(nomeFile("json"), JSON.stringify(o, null, 2), "application/json"); return;
+    }
+    case "allega": UI.allegaVoce = arg; document.getElementById("allegaFile").click(); return;
+    case "delall": { const p = String(arg).split(":"); togliAllegato(p[0], p[1]); return; }
     case "csv": scarica(nomeFile("csv"), csv(), "text/csv;charset=utf-8"); return;
     case "importa": document.getElementById("importFile").click(); return;
     case "nuovo": chiedi(t("Iniziare un nuovo progetto?"), t("Il caso aperto verrà sostituito da un progetto vuoto. Esporta prima il file se vuoi conservarlo."), t("Nuovo progetto"), () => { S = nuovoProgetto(); UI.open = {}; UI.cmp = null; UI.tab = "progetto"; accodaSalva(); refresh(); }); return;
@@ -2421,12 +2591,17 @@ function avvia() {
       const f = el.files[0]; if (!f) return;
       const rd = new FileReader();
       rd.onload = () => {
-        try { S = migrate(JSON.parse(rd.result)); S.esempio = false; UI.open = {}; UI.cmp = null; salva(); refresh(); flag(t("File importato")); }
+        try {
+          const o = JSON.parse(rd.result), dati = o && o.allegatiDati;
+          if (o) delete o.allegatiDati;
+          if (dati && typeof dati === "object") Object.keys(dati).forEach(id => { if (Array.isArray(dati[id])) { ALL[id] = dati[id]; idb.put(id, dati[id]).catch(() => {}); } });
+          S = migrate(o); S.esempio = false; UI.open = {}; UI.cmp = null; salva(); refresh(); flag(t("File importato")); }
         catch (err) { flag(t("File non leggibile: non è un salvataggio di RECKONING"), true); }
         el.value = "";
       };
       rd.readAsText(f); return;
     }
+    if (el.id === "allegaFile") { const fs = Array.prototype.slice.call(el.files); el.value = ""; if (fs.length) allega(UI.allegaVoce, fs); return; }
     if (el.dataset.c === "anni") { cambiaAnni(el); return; }
     if (el.dataset.c === "scala") { cambiaScala(el); return; }
     if (el.dataset.c === "valuta") { cambiaValuta(el); return; }
@@ -2479,6 +2654,7 @@ function avvia() {
     const h = (location.hash || "").slice(1);
     if (RENDER[h]) UI.tab = h;
     refresh();
+    caricaAllegati().then(() => { if (idAllegati(S).size) refresh(); });
   });
 }
 avvia();
